@@ -1,0 +1,265 @@
+[
+  {
+    "DeviceType": "Appliance",
+    "DeviceId": "680539",
+    "TelemetryNames": [
+      "Power_Consumed"
+    ]
+  },
+  {
+    "DeviceType": "Appliance",
+    "DeviceId": "694796",
+    "TelemetryNames": [
+      "Power_Consumed"
+    ]
+  },
+  {
+    "DeviceType": "Appliance",
+    "DeviceId": "684791",
+    "TelemetryNames": [
+      "Power_Consumed"
+    ]
+  },
+  {
+    "DeviceType": "LightFixture",
+    "DeviceId": "757198",
+    "TelemetryNames": [
+      "Power_Consumed",
+      "Luminous_Efficacy"
+    ]
+  },
+  {
+    "DeviceType": "LightFixture",
+    "DeviceId": "767797",
+    "TelemetryNames": [
+      "Power_Consumed",
+      "Luminous_Efficacy"
+    ]
+  },
+  {
+    "DeviceType": "LightFixture",
+    "DeviceId": "767856",
+    "TelemetryNames": [
+      "Power_Consumed",
+      "Luminous_Efficacy"
+    ]
+  },
+  {
+    "DeviceType": "LightFixture",
+    "DeviceId": "767857",
+    "TelemetryNames": [
+      "Power_Consumed",
+      "Luminous_Efficacy"
+    ]
+  },
+  {
+    "DeviceType": "LightFixture",
+    "DeviceId": "767870",
+    "TelemetryNames": [
+      "Power_Consumed",
+      "Luminous_Efficacy"
+    ]
+  },
+  {
+    "DeviceType": "LightFixture",
+    "DeviceId": "767871",
+    "TelemetryNames": [
+      "Power_Consumed",
+      "Luminous_Efficacy"
+    ]
+  },
+  {
+    "DeviceType": "LightFixture",
+    "DeviceId": "767916",
+    "TelemetryNames": [
+      "Power_Consumed",
+      "Luminous_Efficacy"
+    ]
+  },
+  {
+    "DeviceType": "LightFixture",
+    "DeviceId": "767917",
+    "TelemetryNames": [
+      "Power_Consumed",
+      "Luminous_Efficacy"
+    ]
+  },
+  {
+    "DeviceType": "LightFixture",
+    "DeviceId": "802782",
+    "TelemetryNames": [
+      "Power_Consumed",
+      "Luminous_Efficacy"
+    ]
+  },
+  {
+    "DeviceType": "LightFixture",
+    "DeviceId": "812954",
+    "TelemetryNames": [
+      "Power_Consumed",
+      "Luminous_Efficacy"
+    ]
+  },
+  {
+    "DeviceType": "Appliance",
+    "DeviceId": "696998",
+    "TelemetryNames": [
+      "Power_Consumed"
+    ]
+  },
+  {
+    "DeviceType": "Appliance",
+    "DeviceId": "686184",
+    "TelemetryNames": [
+      "Power_Consumed"
+    ]
+  },
+  {
+    "DeviceType": "Appliance",
+    "DeviceId": "679009",
+    "TelemetryNames": [
+      "Power_Consumed"
+    ]
+  },
+  {
+    "DeviceType": "SolarPanel",
+    "DeviceId": "778316",
+    "TelemetryNames": []
+  },
+  {
+    "DeviceType": "SolarPanel",
+    "DeviceId": "800280",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Temperature",
+      "Voltage"
+    ]
+  },
+  {
+    "DeviceType": "SolarPanel",
+    "DeviceId": "800325",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Temperature",
+      "Voltage"
+    ]
+  },
+  {
+    "DeviceType": "SolarPanel",
+    "DeviceId": "800329",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Temperature",
+      "Voltage"
+    ]
+  },
+  {
+    "DeviceType": "SolarPanel",
+    "DeviceId": "800340",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Temperature",
+      "Voltage"
+    ]
+  },
+  {
+    "DeviceType": "SolarPanel",
+    "DeviceId": "800342",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Temperature",
+      "Voltage"
+    ]
+  },
+  {
+    "DeviceType": "SolarPanel",
+    "DeviceId": "800348",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Temperature",
+      "Voltage"
+    ]
+  },
+  {
+    "DeviceType": "SolarPanel",
+    "DeviceId": "800350",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Temperature",
+      "Voltage"
+    ]
+  },
+  {
+    "DeviceType": "SolarPanel",
+    "DeviceId": "800381",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Temperature",
+      "Voltage"
+    ]
+  },
+  {
+    "DeviceType": "SolarPanel",
+    "DeviceId": "800383",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Temperature",
+      "Voltage"
+    ]
+  },
+  {
+    "DeviceType": "SolarPanel",
+    "DeviceId": "800389",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Temperature",
+      "Voltage"
+    ]
+  },
+  {
+    "DeviceType": "SolarPanel",
+    "DeviceId": "800391",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Temperature",
+      "Voltage"
+    ]
+  },
+  {
+    "DeviceType": "Appliance",
+    "DeviceId": "985756",
+    "TelemetryNames": [
+      "Power_Consumed"
+    ]
+  },
+  {
+    "DeviceType": "WindTurbine",
+    "DeviceId": "418977",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Theoretical_Power_Curve",
+      "Wind_Speed",
+      "Wind_Direction"
+    ]
+  },
+  {
+    "DeviceType": "WindTurbine",
+    "DeviceId": "418985",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Theoretical_Power_Curve",
+      "Wind_Speed",
+      "Wind_Direction"
+    ]
+  },
+  {
+    "DeviceType": "WindTurbine",
+    "DeviceId": "554644",
+    "TelemetryNames": [
+      "Power_Generated",
+      "Theoretical_Power_Curve",
+      "Wind_Speed",
+      "Wind_Direction"
+    ]
+  }
+]
