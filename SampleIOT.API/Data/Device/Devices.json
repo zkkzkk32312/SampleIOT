@@ -231,35 +231,5 @@
     "TelemetryNames": [
       "Power_Consumed"
     ]
-  },
-  {
-    "DeviceType": "WindTurbine",
-    "DeviceId": "418977",
-    "TelemetryNames": [
-      "Power_Generated",
-      "Theoretical_Power_Curve",
-      "Wind_Speed",
-      "Wind_Direction"
-    ]
-  },
-  {
-    "DeviceType": "WindTurbine",
-    "DeviceId": "418985",
-    "TelemetryNames": [
-      "Power_Generated",
-      "Theoretical_Power_Curve",
-      "Wind_Speed",
-      "Wind_Direction"
-    ]
-  },
-  {
-    "DeviceType": "WindTurbine",
-    "DeviceId": "554644",
-    "TelemetryNames": [
-      "Power_Generated",
-      "Theoretical_Power_Curve",
-      "Wind_Speed",
-      "Wind_Direction"
-    ]
   }
 ]

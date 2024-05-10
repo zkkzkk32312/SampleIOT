@@ -1,8 +1,10 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace SampleIOT.API.Models
 {
+    [Serializable]
     public class Device
     {
         [JsonPropertyName("DeviceId")]

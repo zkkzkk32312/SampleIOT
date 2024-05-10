@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SampleIOT.API.Models;
-using SampleIOT.API.Services;
 using SampleIOT.API.Services.Interface;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,10 +14,10 @@ namespace SampleIOT.API.Controllers
     [ApiController]
     public class DeviceController : ControllerBase
     {
-        private DeviceService deviceService;
+        private IDeviceService deviceService;
         private readonly ILogger<DeviceController> _logger;
 
-        public DeviceController(DeviceService service, ILogger<DeviceController> logger) 
+        public DeviceController(IDeviceService service, ILogger<DeviceController> logger) 
         {
             this.deviceService = service;
             this._logger = logger;

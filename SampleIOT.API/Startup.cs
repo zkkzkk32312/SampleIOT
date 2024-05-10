@@ -1,17 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using SampleIOT.API.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+using SampleIOT.API.Services.Interface;
 
 namespace SampleIOT.API
 {
@@ -29,11 +22,13 @@ namespace SampleIOT.API
         {
             services.AddCors();
             services.AddControllers();
-            services.AddSingleton<DeviceService>();
+            services.AddSingleton<IDeviceService, DeviceService>();
+            services.AddSingleton<ITelemetryService, TelemetryService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, 
+            IDeviceService deviceService, ITelemetryService telemetryService)
         {
             app.UseCors(builder =>
                 builder.AllowAnyOrigin()
@@ -57,7 +52,8 @@ namespace SampleIOT.API
                 endpoints.MapControllers();
             });
 
-
+            deviceService.Start();
+            telemetryService.Start();
         }
     }
 }

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace SampleIOT.API.Services
 {
@@ -18,7 +17,7 @@ namespace SampleIOT.API.Services
         public DeviceService(IWebHostEnvironment webHostEnvironment)
         {
             _webHostEnvironment = webHostEnvironment;
-            _jsonPathName = Path.Combine(_webHostEnvironment.ContentRootPath, "Data", "Data.json");
+            _jsonPathName = Path.Combine(_webHostEnvironment.ContentRootPath, "Data", "Device", "Devices.json");
             _devices = LoadDevicesFromJsonFile();
         }
 
@@ -46,6 +45,11 @@ namespace SampleIOT.API.Services
         public Device GetDevice(string id)
         {
             return _devices.FirstOrDefault(x => x.Id == id);
+        }
+
+        public void Start ()
+        {
+
         }
     }
 }

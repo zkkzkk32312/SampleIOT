@@ -1,14 +1,11 @@
 ﻿using SampleIOT.API.Models;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace SampleIOT.API.Services.Interface
 {
-    public interface IDeviceService
+    public interface ITelemetryService
     {
-        IEnumerable<Device> GetDevices();
-        Device GetDevice(string id);
-
+        DeviceTelemetry GetTelemetry(string DeviceId);
         void Start();
     }
 }
