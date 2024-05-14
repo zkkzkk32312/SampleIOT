@@ -20,7 +20,18 @@ namespace SampleIOT.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
+            //services.AddCors();
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowOrigin",
+                    builder =>
+                    {
+                        builder.WithOrigins("http://127.0.0.1:5500") // Adjust origin to match your frontend application
+                               .AllowCredentials()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader();
+                    });
+            });
             services.AddControllers();
             services.AddSingleton<IDeviceService, DeviceService>();
             services.AddSingleton<ITelemetryService, TelemetryService>();
@@ -30,11 +41,12 @@ namespace SampleIOT.API
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, 
             IDeviceService deviceService, ITelemetryService telemetryService)
         {
-            app.UseCors(builder =>
-                builder.AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-            );
+            app.UseCors("AllowOrigin");
+            //app.UseCors(builder =>
+            //    builder.AllowAnyOrigin()
+            //    .AllowAnyMethod()
+            //    .AllowAnyHeader()
+            //);
 
             if (env.IsDevelopment())
             {

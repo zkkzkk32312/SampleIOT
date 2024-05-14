@@ -13,6 +13,7 @@ namespace SampleIOT.API.Services
 {
     public class TelemetryService : ITelemetryService, IDisposable
     {
+        public Action<string, Telemetry> NewTelemetryReceived { get; set; }
         private readonly IDeviceService deviceService;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ILogger<TelemetryService> _logger;
@@ -64,7 +65,6 @@ namespace SampleIOT.API.Services
                         DateTimeOffset timeOfDay = DateTimeOffset.Parse(fields[0]);
                         DateTimeOffset now = DateTimeOffset.Now;
 
-
                         for (int i = 1; i < fields.Length; i++)
                         {
                             telemetries.Add(new Telemetry { Key = telemetryNames[i], Value = fields[i], TimeStamp = timeOfDay });
@@ -87,7 +87,11 @@ namespace SampleIOT.API.Services
 
         public DeviceTelemetry GetTelemetry(string deviceId)
         {
-            return fileDictionary[deviceId];
+            if (dictionary.ContainsKey(deviceId))
+            {
+                return dictionary[deviceId];
+            }
+            return null;
         }
 
         string GetDeviceIdFromFileName (string fileName)
@@ -126,6 +130,7 @@ namespace SampleIOT.API.Services
                     updatedTelemetryList.Add(simulatedTelemetry);
                     kvp.Value.Telemetries = updatedTelemetryList.ToArray();
                     _logger.LogInformation("Simulated Telemetry entries added for " + deviceId);
+                    NewTelemetryReceived?.Invoke(deviceId, simulatedTelemetry);
                 }
             }
         }

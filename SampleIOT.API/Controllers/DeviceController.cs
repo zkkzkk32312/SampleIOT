@@ -100,9 +100,9 @@ namespace SampleIOT.API.Controllers
                 //htmlContent += $"<div class=\"\">{device.Type}</div>";
                 //htmlContent += "</div>";
 
-                html += "<tr>";
-                html += $"<td class=\"whitespace-nowrap px-4 py-2\">{device.Id}</div>";
-                html += $"<td class=\"whitespace-nowrap px-4 py-2\">{device.Type}</div>";
+                html += "<tr class=\"hover:bg-accent-2 w-full flex flex-row\" hx-trigger=\"click\" onclick=\"CustomFunction(this)\">";
+                html += $"<td class=\"whitespace-nowrap px-4 py-2 flex-1\">{device.Id}</div>";
+                html += $"<td class=\"whitespace-nowrap px-4 py-2 flex-1\">{device.Type}</div>";
                 html += "<tr>";
             }
             return html;
