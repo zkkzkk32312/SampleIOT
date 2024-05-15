@@ -106,7 +106,7 @@ namespace SampleIOT.API.Services
 
         void StartSimulation ()
         {
-            _timer = new Timer(Simulate, null, TimeSpan.Zero, TimeSpan.FromSeconds(15));
+            _timer = new Timer(Simulate, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
         }
 
         void Simulate (object state)
@@ -129,7 +129,7 @@ namespace SampleIOT.API.Services
                     var updatedTelemetryList = kvp.Value.Telemetries.ToList();
                     updatedTelemetryList.Add(simulatedTelemetry);
                     kvp.Value.Telemetries = updatedTelemetryList.ToArray();
-                    _logger.LogInformation("Simulated Telemetry entries added for " + deviceId);
+                    //_logger.LogInformation("Simulated Telemetry entries added for " + deviceId);
                     NewTelemetryReceived?.Invoke(deviceId, simulatedTelemetry);
                 }
             }

@@ -26,12 +26,12 @@ namespace SampleIOT.API.Controllers
         }
 
         private ITelemetryService telemetryService;
-        private readonly ILogger<DeviceController> _logger;
+        private readonly ILogger<TelemetryController> _logger;
         // Dictionary to store SSE clients
         private static readonly Dictionary<Guid, Subscription> Clients = new Dictionary<Guid, Subscription>();
         private static readonly Dictionary<string, HashSet<Guid>> DeviceTelemetrySubscribers = new Dictionary<string, HashSet<Guid>>();
 
-        public TelemetryController(ITelemetryService service, ILogger<DeviceController> logger)
+        public TelemetryController(ITelemetryService service, ILogger<TelemetryController> logger)
         {
             this.telemetryService = service;
             this._logger = logger;
