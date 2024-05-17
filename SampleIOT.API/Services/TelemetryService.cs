@@ -13,12 +13,24 @@ namespace SampleIOT.API.Services
 {
     public class TelemetryService : ITelemetryService, IDisposable
     {
+        private class TelemetrySimulationFile
+        {
+            public Device Device { get; set; }
+            public List<TelemetrySimulationFileRow> Rows { get; set; }
+        }
+
+        private class TelemetrySimulationFileRow
+        {
+            public DateTimeOffset TimeStamp { get; set; }
+            public List<Telemetry> Telemetries { get; set; }
+        }
+
         public Action<string, Telemetry> NewTelemetryReceived { get; set; }
         private readonly IDeviceService deviceService;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ILogger<TelemetryService> _logger;
         private readonly string _telemetryDataFolderPath;
-        private Dictionary<string, DeviceTelemetry> fileDictionary = new Dictionary<string, DeviceTelemetry>();
+        private Dictionary<string, TelemetrySimulationFile> fileDictionary = new Dictionary<string, TelemetrySimulationFile>();
         private Dictionary<string, DeviceTelemetry> dictionary = new Dictionary<string, DeviceTelemetry>();
         private Timer _timer;
 
@@ -38,12 +50,14 @@ namespace SampleIOT.API.Services
             {
                 string fileName = Path.GetFileNameWithoutExtension(file.Name);
                 string deviceId = GetDeviceIdFromFileName(fileName);
-                DeviceTelemetry deviceTelemetry = new DeviceTelemetry();
+                TelemetrySimulationFile simulationFile = new TelemetrySimulationFile();
                 DeviceTelemetry deviceTelemetry2 = new DeviceTelemetry();
-                deviceTelemetry.Device = deviceService.GetDevice(deviceId);
+                simulationFile.Device = deviceService.GetDevice(deviceId);
                 deviceTelemetry2.Device = deviceService.GetDevice(deviceId);
 
-                List<Telemetry> telemetries = new List<Telemetry>();
+
+                //List<Telemetry> telemetries = new List<Telemetry>();
+                simulationFile.Rows = new List<TelemetrySimulationFileRow>();
                 List<Telemetry> telemetries2 = new List<Telemetry>();
 
                 using (TextFieldParser parser = new TextFieldParser(file.FullName))
@@ -65,24 +79,29 @@ namespace SampleIOT.API.Services
                         DateTimeOffset timeOfDay = DateTimeOffset.Parse(fields[0]);
                         DateTimeOffset now = DateTimeOffset.Now;
 
+                        var row = new TelemetrySimulationFileRow();
+                        row.TimeStamp = timeOfDay;
+                        row.Telemetries = new List<Telemetry>();
+
                         for (int i = 1; i < fields.Length; i++)
                         {
-                            telemetries.Add(new Telemetry { Key = telemetryNames[i], Value = fields[i], TimeStamp = timeOfDay });
+                            row.Telemetries.Add(new Telemetry { Key = telemetryNames[i], Value = fields[i], TimeStamp = timeOfDay });
+
                             if (timeOfDay <= now)
                             {
                                 telemetries2.Add(new Telemetry { Key = telemetryNames[i], Value = fields[i], TimeStamp = timeOfDay });
                             }
                         }
+                        simulationFile.Rows.Add(row);
                     }
-                    deviceTelemetry.Telemetries = telemetries.ToArray();
+                    //telemetryFile.Telemetries = telemetries.ToArray();
                     deviceTelemetry2.Telemetries = telemetries2.ToArray();
                 }
-                _logger.LogInformation(deviceTelemetry.Device + " " + deviceTelemetry.Telemetries.Count());
-                fileDictionary.Add(deviceId, deviceTelemetry);
+                _logger.LogInformation(simulationFile.Device + " " + simulationFile.Rows.Count());
+                fileDictionary.Add(deviceId, simulationFile);
                 dictionary.Add(deviceId, deviceTelemetry2);
-
-                StartSimulation();
             }
+            StartSimulation();
         }
 
         public DeviceTelemetry GetTelemetry(string deviceId)
@@ -106,31 +125,42 @@ namespace SampleIOT.API.Services
 
         void StartSimulation ()
         {
-            _timer = new Timer(Simulate, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+            _timer = new Timer(Simulate, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
         }
 
         void Simulate (object state)
         {
             DateTimeOffset now = DateTimeOffset.Now;
+            _logger.LogInformation("******SIMULATE****** : " + now.ToString());
 
             foreach (var kvp in dictionary)
             {
                 var deviceId = kvp.Key;
                 var fileDeviceTelemetry = fileDictionary[deviceId];
-                var fileTelemetryArray = fileDeviceTelemetry.Telemetries;
-                var simulatedTelemetry = fileTelemetryArray.FirstOrDefault(x => x.TimeStamp > now);
+                //var fileTelemetryArray = fileDeviceTelemetry.Telemetries;
+                var simulationRow = fileDeviceTelemetry.Rows.FirstOrDefault(x => x.TimeStamp > now);
 
-                if (simulatedTelemetry == null)
+                if (simulationRow == null)
                 {
                     _logger.LogInformation("Fucked up");
                 }
                 else
                 {
                     var updatedTelemetryList = kvp.Value.Telemetries.ToList();
-                    updatedTelemetryList.Add(simulatedTelemetry);
-                    kvp.Value.Telemetries = updatedTelemetryList.ToArray();
-                    //_logger.LogInformation("Simulated Telemetry entries added for " + deviceId);
-                    NewTelemetryReceived?.Invoke(deviceId, simulatedTelemetry);
+
+                    var lastTelemetry = updatedTelemetryList[updatedTelemetryList.Count - 1];
+                    if (simulationRow.TimeStamp.Hour > lastTelemetry.TimeStamp.Hour ||
+                        (simulationRow.TimeStamp.Hour == lastTelemetry.TimeStamp.Hour &&
+                        simulationRow.TimeStamp.Minute > lastTelemetry.TimeStamp.Minute))
+                    {
+                        foreach(var telemetry in simulationRow.Telemetries)
+                        {
+                            updatedTelemetryList.Add(telemetry);
+                            kvp.Value.Telemetries = updatedTelemetryList.ToArray();
+                            NewTelemetryReceived?.Invoke(deviceId, telemetry);
+                            //_logger.LogInformation("Simulated Telemetry entries added for " + deviceId);
+                        }
+                    }
                 }
             }
         }
