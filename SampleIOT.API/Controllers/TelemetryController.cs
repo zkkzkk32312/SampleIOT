@@ -41,7 +41,7 @@ namespace SampleIOT.API.Controllers
                     .Select(y => new DeviceTelemetry
                     {
                         Device = deviceTelemetry.Device,
-                        Telemetries = limit.HasValue ? y.Take(limit.Value).ToArray() : y.ToArray()
+                        Telemetries = limit.HasValue ? y.TakeLast(limit.Value).ToArray() : y.ToArray()
                     })
                     .ToList();
                 return Ok(disaggregatedDeviceTelemetry);
@@ -49,7 +49,7 @@ namespace SampleIOT.API.Controllers
             else
             {
                 // Create a copy of the Telemetries array
-                var trimmedTelemetries = limit.HasValue ? deviceTelemetry.Telemetries.Take(limit.Value).ToArray() : deviceTelemetry.Telemetries;
+                var trimmedTelemetries = limit.HasValue ? deviceTelemetry.Telemetries.TakeLast(limit.Value).ToArray() : deviceTelemetry.Telemetries;
                 var deviceTelemetryCopy = new DeviceTelemetry
                 {
                     Device = deviceTelemetry.Device,
