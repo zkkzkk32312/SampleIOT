@@ -33,18 +33,34 @@ namespace SampleIOT.API.Controllers
 
         private async void OnNewTelemetryReceived(string deviceId, Telemetry telemetry)
         {
-            var clients = new List<Guid>();
-            var json = JsonSerializer.Serialize(telemetry);
-
-            if (targetDevice != null && targetDevice.CompareTo(deviceId) == 0)
+            try
             {
-                if (Response.Body != null && Response.Body.CanWrite)
+                var clients = new List<Guid>();
+                var json = JsonSerializer.Serialize(telemetry);
+
+                if (targetDevice != null && targetDevice.CompareTo(deviceId) == 0)
                 {
-                    var currentTime = DateTimeOffset.Now.ToString("HH:mm:ss");
-                    var message = $"event: Telemetry\ndata: <div>Content to swap into your HTML page. Client ID: {clientId}. Current Time: {currentTime}. Telemetry: {json}</div>\n\n";
-                    _logger.LogInformation($"*****OnNewTelemetryReceived***** : Client: {clientId}, Device ID : {deviceId}, Telemetry : {json}");
-                    await SendMessage(message);
+                    if (Response.Body != null && Response.Body.CanWrite)
+                    {
+                        var currentTime = DateTimeOffset.Now.ToString("HH:mm:ss");
+                        var message = $"event: Telemetry\ndata: <div>Content to swap into your HTML page. Client ID: {clientId}. Current Time: {currentTime}. Telemetry: {json}</div>\n\n";
+                        _logger.LogInformation($"*****OnNewTelemetryReceived***** : Client: {clientId}, Device ID : {deviceId}, Telemetry : {json}");
+                        await SendMessage(message);
+                    }
                 }
+            }
+            catch (ObjectDisposedException ex)
+            {
+                _logger.LogError("**********ObjectDisposedException********");
+                _logger.LogError(ex, "Response has been disposed before the message could be sent.");
+                // Handle the exception or log it as needed
+                telemetryService.NewTelemetryReceived -= OnNewTelemetryReceived;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("**********Exception********");
+                _logger.LogError(ex, "An error occurred while processing telemetry data.");
+                // Handle other exceptions as needed
             }
         }
 

@@ -142,24 +142,22 @@ namespace SampleIOT.API.Services
 
                 if (simulationRow == null)
                 {
-                    _logger.LogInformation("Fucked up");
+                    _logger.LogInformation("Simulation reached the end of daily cycle, current time :" + now.ToString("HH:mm:ss"));
+                    break;
                 }
-                else
-                {
-                    var updatedTelemetryList = kvp.Value.Telemetries.ToList();
 
-                    var lastTelemetry = updatedTelemetryList[updatedTelemetryList.Count - 1];
-                    if (simulationRow.TimeStamp.Hour > lastTelemetry.TimeStamp.Hour ||
-                        (simulationRow.TimeStamp.Hour == lastTelemetry.TimeStamp.Hour &&
-                        simulationRow.TimeStamp.Minute > lastTelemetry.TimeStamp.Minute))
+                var updatedTelemetryList = kvp.Value.Telemetries.ToList();
+
+                var lastTelemetry = updatedTelemetryList[updatedTelemetryList.Count - 1];
+                if (simulationRow.TimeStamp.Hour > lastTelemetry.TimeStamp.Hour ||
+                    (simulationRow.TimeStamp.Hour == lastTelemetry.TimeStamp.Hour &&
+                    simulationRow.TimeStamp.Minute > lastTelemetry.TimeStamp.Minute))
+                {
+                    foreach(var telemetry in simulationRow.Telemetries)
                     {
-                        foreach(var telemetry in simulationRow.Telemetries)
-                        {
-                            updatedTelemetryList.Add(telemetry);
-                            kvp.Value.Telemetries = updatedTelemetryList.ToArray();
-                            NewTelemetryReceived?.Invoke(deviceId, telemetry);
-                            //_logger.LogInformation("Simulated Telemetry entries added for " + deviceId);
-                        }
+                        updatedTelemetryList.Add(telemetry);
+                        kvp.Value.Telemetries = updatedTelemetryList.ToArray();
+                        NewTelemetryReceived?.Invoke(deviceId, telemetry);
                     }
                 }
             }

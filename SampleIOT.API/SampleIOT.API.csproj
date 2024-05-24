@@ -1,10 +1,132 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>8a7371aa-5e2d-43c4-a65e-35b3e5f271c4</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Data\Telemetry\Cooktop_680539.csv" />
+    <None Remove="Data\Telemetry\Dishwasher_694796.csv" />
+    <None Remove="Data\Telemetry\Fridge_684791.csv" />
+    <None Remove="Data\Telemetry\Light_757198.csv" />
+    <None Remove="Data\Telemetry\Light_767797.csv" />
+    <None Remove="Data\Telemetry\Light_767856.csv" />
+    <None Remove="Data\Telemetry\Light_767857.csv" />
+    <None Remove="Data\Telemetry\Light_767870.csv" />
+    <None Remove="Data\Telemetry\Light_767871.csv" />
+    <None Remove="Data\Telemetry\Light_767916.csv" />
+    <None Remove="Data\Telemetry\Light_767917.csv" />
+    <None Remove="Data\Telemetry\Light_802782.csv" />
+    <None Remove="Data\Telemetry\Light_812954.csv" />
+    <None Remove="Data\Telemetry\Microwave_696998.csv" />
+    <None Remove="Data\Telemetry\Oven_686184.csv" />
+    <None Remove="Data\Telemetry\Range_679009.csv" />
+    <None Remove="Data\Telemetry\SolarPanel_778316.csv" />
+    <None Remove="Data\Telemetry\SolarPanel_800280.csv" />
+    <None Remove="Data\Telemetry\SolarPanel_800325.csv" />
+    <None Remove="Data\Telemetry\SolarPanel_800329.csv" />
+    <None Remove="Data\Telemetry\SolarPanel_800340.csv" />
+    <None Remove="Data\Telemetry\SolarPanel_800342.csv" />
+    <None Remove="Data\Telemetry\SolarPanel_800348.csv" />
+    <None Remove="Data\Telemetry\SolarPanel_800350.csv" />
+    <None Remove="Data\Telemetry\SolarPanel_800381.csv" />
+    <None Remove="Data\Telemetry\SolarPanel_800383.csv" />
+    <None Remove="Data\Telemetry\SolarPanel_800389.csv" />
+    <None Remove="Data\Telemetry\SolarPanel_800391.csv" />
+    <None Remove="Data\Telemetry\Tv_985756.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Data\Telemetry\Cooktop_680539.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Dishwasher_694796.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Fridge_684791.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Light_757198.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Light_767797.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Light_767856.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Light_767857.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Light_767870.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Light_767871.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Light_767916.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Light_767917.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Light_802782.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Light_812954.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Microwave_696998.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Oven_686184.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Range_679009.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\SolarPanel_778316.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\SolarPanel_800280.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\SolarPanel_800325.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\SolarPanel_800329.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\SolarPanel_800340.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\SolarPanel_800342.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\SolarPanel_800348.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\SolarPanel_800350.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\SolarPanel_800381.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\SolarPanel_800383.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\SolarPanel_800389.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\SolarPanel_800391.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Telemetry\Tv_985756.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />

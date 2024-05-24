@@ -95,14 +95,9 @@ namespace SampleIOT.API.Controllers
             string html = string.Empty;
             foreach (var device in list)
             {
-                //htmlContent += "<div class=\"flex items-center py-4\">";
-                //htmlContent += $"<div class=\"flex-grow\">{device.Id}</div>";
-                //htmlContent += $"<div class=\"\">{device.Type}</div>";
-                //htmlContent += "</div>";
-
-                html += "<tr class=\"hover:bg-accent-2 w-full flex flex-row\" hx-trigger=\"click\" onclick=\"CustomFunction(this)\">";
-                html += $"<td class=\"whitespace-nowrap px-4 py-2 flex-1\">{device.Id}</div>";
-                html += $"<td class=\"whitespace-nowrap px-4 py-2 flex-1\">{device.Type}</div>";
+                html += "<tr class=\"hover:bg-accent-2 w-full flex flex-row\" hx-trigger=\"click\" hx-include=\"find td\">";
+                html += $"<td class=\"whitespace-nowrap px-4 py-2 flex-1\">{device.Id}</td>";
+                html += $"<td class=\"whitespace-nowrap px-4 py-2 flex-1\">{device.Type}</td>";
                 html += "<tr>";
             }
             return html;
