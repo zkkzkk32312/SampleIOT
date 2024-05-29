@@ -22,7 +22,7 @@
       "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/devices",
       "environmentVariables": {
-        "ASPNETCORE_URLS": "https://+:443;http://+:80"
+        "ASPNETCORE_URLS": "https://+:443;http://+:80",
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "publishAllPorts": true,
