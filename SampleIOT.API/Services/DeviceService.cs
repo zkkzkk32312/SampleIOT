@@ -31,15 +31,6 @@ namespace SampleIOT.API.Services
         public IEnumerable<Device> GetDevices()
         {
             return _devices;
-            //using (var jsonFileReader = File.OpenText(_jsonPathName))
-            //{
-            //    return JsonSerializer.Deserialize<Device[]>(
-            //        jsonFileReader.ReadToEnd(),
-            //        new JsonSerializerOptions
-            //        {
-            //            PropertyNameCaseInsensitive = true,
-            //        });
-            //}
         }
 
         public Device GetDevice(string id)
@@ -49,7 +40,6 @@ namespace SampleIOT.API.Services
 
         public void Start ()
         {
-
         }
     }
 }

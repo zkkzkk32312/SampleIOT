@@ -33,6 +33,7 @@ namespace SampleIOT.API.Services
         private Dictionary<string, TelemetrySimulationFile> fileDictionary = new Dictionary<string, TelemetrySimulationFile>();
         private Dictionary<string, DeviceTelemetry> dictionary = new Dictionary<string, DeviceTelemetry>();
         private Timer _timer;
+        private const int TelemetryCountSoftLimit = 2000;
 
         public TelemetryService(IWebHostEnvironment webHostEnvironment, ILogger<TelemetryService> logger, IDeviceService service)
         {
@@ -131,7 +132,7 @@ namespace SampleIOT.API.Services
         void Simulate (object state)
         {
             DateTimeOffset now = DateTimeOffset.Now;
-            _logger.LogInformation("******SIMULATE****** : " + now.ToString());
+            //_logger.LogInformation("******SIMULATE****** : " + now.ToString());
 
             foreach (var kvp in dictionary)
             {
@@ -143,6 +144,7 @@ namespace SampleIOT.API.Services
                 if (simulationRow == null)
                 {
                     _logger.LogInformation("Simulation reached the end of daily cycle, current time :" + now.ToString("HH:mm:ss"));
+                    TrimDeviceTelemetry(kvp.Value);
                     break;
                 }
 
@@ -166,6 +168,19 @@ namespace SampleIOT.API.Services
         void StopSimulation ()
         {
             _timer?.Change(Timeout.Infinite, 0);
+        }
+
+        void TrimDeviceTelemetry (DeviceTelemetry deviceTelemetry)
+        {
+            if (deviceTelemetry != null &&
+                deviceTelemetry.Telemetries.Count() > TelemetryCountSoftLimit)
+            {
+                int currentLength = deviceTelemetry.Telemetries.Count();
+                Telemetry[] trimmedArray = new Telemetry[TelemetryCountSoftLimit];
+                Array.Copy(deviceTelemetry.Telemetries, currentLength - TelemetryCountSoftLimit, trimmedArray, 0, TelemetryCountSoftLimit);
+                deviceTelemetry.Telemetries = trimmedArray;
+                _logger.LogInformation($"Telemetry array trimmed for {deviceTelemetry.Device.Id.ToString()}");
+            }
         }
 
         public void Dispose()
