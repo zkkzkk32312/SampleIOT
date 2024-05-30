@@ -71,7 +71,19 @@ namespace SampleIOT.API.Controllers
 
             Response.ContentType = "text/event-stream";
             Response.Headers.Add("Cache-Control", "no-cache");
-            Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            //Response.Headers.Add("Access-Control-Allow-Origin", "*");
+
+            // Get origin from request headers
+            var origin = Request.Headers["Origin"].ToString();
+            // Check if origin is present
+            if (!string.IsNullOrEmpty(origin))
+            {
+                // Echo back the origin in the response headers
+                Response.Headers.Add("Access-Control-Allow-Origin", origin);
+
+                // Allow credentials if necessary
+                Response.Headers.Add("Access-Control-Allow-Credentials", "true");
+            }
 
             targetDevice = deviceId;
 
