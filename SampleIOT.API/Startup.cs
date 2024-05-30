@@ -48,13 +48,16 @@ namespace SampleIOT.API
                 }
                 else
                 {
-                    options.AddPolicy("AllowAnyOrigin",
+                    options.AddPolicy("AllowMyDomain",
                         builder =>
                         {
                             builder
-                                .AllowAnyOrigin()
+                                .SetIsOriginAllowedToAllowWildcardSubdomains()
+                                .WithOrigins("https://zkkzkk32312.github.io", "https://*.zackcheng.com")
+                                //.AllowAnyOrigin()
                                 .AllowAnyHeader()
-                                .AllowAnyMethod();
+                                .AllowAnyMethod()
+                                .AllowCredentials();
                         });
                 }
             });
@@ -75,7 +78,7 @@ namespace SampleIOT.API
             }
             else
             {
-                app.UseCors("AllowAnyOrigin");
+                app.UseCors("AllowMyDomain");
             }
 
             app.UseHttpsRedirection();
