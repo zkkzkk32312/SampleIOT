@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcService";
+
+package device;
+
+service DeviceGrpc {
+  rpc GetDeviceData (DeviceRequest) returns (DeviceReply);
+}
+
+message DeviceRequest {
+  string deviceId = 1;
+}
+
+message DeviceReply {
+  string deviceId = 1;
+  string deviceType = 2;
+  repeated string telemetryNames = 3;
+}
