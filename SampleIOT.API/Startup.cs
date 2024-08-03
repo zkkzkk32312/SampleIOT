@@ -1,3 +1,5 @@
+using Grpc.Net.Client;
+using GrpcService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -65,6 +67,12 @@ namespace SampleIOT.API
             services.AddControllers();
             services.AddSingleton<IDeviceService, DeviceService>();
             services.AddSingleton<ITelemetryService, TelemetryService>();
+
+            services.AddSingleton(sp =>
+            {
+                var channel = GrpcChannel.ForAddress("https://localhost:7228"); // Replace with your gRPC service address
+                return new DeviceGrpc.DeviceGrpcClient(channel);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -4,15 +4,27 @@ using SampleIOT.API.Services.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Register HttpClient
+builder.Services.AddHttpClient();
+// Add gRPC services to the container.
 builder.Services.AddGrpc();
-builder.Services.AddSingleton<IDeviceService, DeviceService>();
+//builder.Services.AddSingleton<IDeviceService, DeviceService>();
 
 var app = builder.Build();
 
+await Task.Delay(3000);
+
 // Configure the HTTP request pipeline.
-app.MapGrpcService<GreeterService>();
-app.MapGrpcService<DeviceGrpcService>();
-app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+app.UseRouting();
+
+// Enable gRPC-Web support
+app.UseGrpcWeb();
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapGrpcService<GreeterService>().EnableGrpcWeb();
+    endpoints.MapGrpcService<DeviceGrpcService>().EnableGrpcWeb(); // Enable gRPC-Web for this service
+    endpoints.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client.");
+});
 
 app.Run();

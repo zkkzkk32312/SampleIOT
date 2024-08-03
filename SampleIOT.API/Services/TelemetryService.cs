@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using GrpcService;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic.FileIO;
 using SampleIOT.API.Models;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SampleIOT.API.Services
 {
@@ -26,7 +28,8 @@ namespace SampleIOT.API.Services
         }
 
         public Action<string, Telemetry> NewTelemetryReceived { get; set; }
-        private readonly IDeviceService deviceService;
+        //private readonly IDeviceService deviceService;
+        private readonly DeviceGrpc.DeviceGrpcClient _deviceGrpcClient;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ILogger<TelemetryService> _logger;
         private readonly string _telemetryDataFolderPath;
@@ -35,16 +38,17 @@ namespace SampleIOT.API.Services
         private Timer _timer;
         private const int TelemetryCountSoftLimit = 2000;
 
-        public TelemetryService(IWebHostEnvironment webHostEnvironment, ILogger<TelemetryService> logger, IDeviceService service)
+        public TelemetryService(IWebHostEnvironment webHostEnvironment, ILogger<TelemetryService> logger, DeviceGrpc.DeviceGrpcClient deviceGrpcClient)//IDeviceService service)
         {
             _webHostEnvironment = webHostEnvironment;
             _logger = logger;
             _telemetryDataFolderPath = Path.Combine(_webHostEnvironment.ContentRootPath, "Data", "Telemetry");
-            deviceService = service;
+            //deviceService = service;
+            _deviceGrpcClient = deviceGrpcClient;
             Initialize();
         }
 
-        void Initialize ()
+        private async Task Initialize ()
         {
             DirectoryInfo info = new DirectoryInfo(_telemetryDataFolderPath);
             foreach (FileInfo file in info.GetFiles("*.csv"))
@@ -53,11 +57,15 @@ namespace SampleIOT.API.Services
                 string deviceId = GetDeviceIdFromFileName(fileName);
                 TelemetrySimulationFile simulationFile = new TelemetrySimulationFile();
                 DeviceTelemetry deviceTelemetry2 = new DeviceTelemetry();
-                simulationFile.Device = deviceService.GetDevice(deviceId);
-                deviceTelemetry2.Device = deviceService.GetDevice(deviceId);
+
+                //simulationFile.Device = deviceService.GetDevice(deviceId);
+                //deviceTelemetry2.Device = deviceService.GetDevice(deviceId);
+
+                var device = await GetDeviceAsync(deviceId);
+                simulationFile.Device = device;
+                deviceTelemetry2.Device = device;
 
 
-                //List<Telemetry> telemetries = new List<Telemetry>();
                 simulationFile.Rows = new List<TelemetrySimulationFileRow>();
                 List<Telemetry> telemetries2 = new List<Telemetry>();
 
@@ -103,6 +111,26 @@ namespace SampleIOT.API.Services
                 dictionary.Add(deviceId, deviceTelemetry2);
             }
             StartSimulation();
+            Console.WriteLine("TelemetryService.Initialize() done !!!!!!!");
+            _logger.LogInformation("TelemetryService.Initialize() done !!!!!!!");
+        }
+
+        /***
+         * GRPC
+         **/
+        public async Task<Device> GetDeviceAsync(string deviceId)
+        {
+            var request = new DeviceRequest { DeviceId = deviceId };
+            var response = await _deviceGrpcClient.GetDeviceDataAsync(request);
+
+            var device = new Device
+            {
+                Id = response.DeviceId,
+                Type = response.DeviceType,
+                TelemetryNames = response.TelemetryNames.ToArray()
+            };
+
+            return device;
         }
 
         public DeviceTelemetry GetTelemetry(string deviceId)
