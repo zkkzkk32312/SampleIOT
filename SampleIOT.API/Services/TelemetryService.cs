@@ -139,7 +139,7 @@ namespace SampleIOT.API.Services
                 var deviceId = kvp.Key;
                 var fileDeviceTelemetry = fileDictionary[deviceId];
                 //var fileTelemetryArray = fileDeviceTelemetry.Telemetries;
-                var simulationRow = fileDeviceTelemetry.Rows.FirstOrDefault(x => x.TimeStamp > now);
+                var simulationRow = fileDeviceTelemetry.Rows.FirstOrDefault(x => x.TimeStamp.TimeOfDay > now.TimeOfDay);
 
                 if (simulationRow == null)
                 {
