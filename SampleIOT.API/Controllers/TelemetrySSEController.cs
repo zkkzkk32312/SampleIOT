@@ -53,20 +53,18 @@ namespace SampleIOT.API.Controllers
             {
                 _logger.LogError("**********ObjectDisposedException********");
                 _logger.LogError(ex, "Response has been disposed before the message could be sent.");
-                // Handle the exception or log it as needed
                 telemetryService.NewTelemetryReceived -= OnNewTelemetryReceived;
             }
             catch (Exception ex)
             {
                 _logger.LogError("**********Exception********");
                 _logger.LogError(ex, "An error occurred while processing telemetry data.");
-                // Handle other exceptions as needed
             }
         }
 
         // SSE endpoint to subscribe to telemetry updates
         [HttpGet("Subscribe/{deviceId}")]
-        public async Task<IActionResult> Subscribe(string deviceId, CancellationToken cancellationToken)
+        public async Task Subscribe(string deviceId, CancellationToken cancellationToken)
         {
             Response.ContentType = "text/event-stream";
             Response.Headers.Add("Cache-Control", "no-cache");
@@ -83,19 +81,11 @@ namespace SampleIOT.API.Controllers
             var tcs = new TaskCompletionSource<bool>();
             cancellationToken.Register(() =>
             {
+                _logger.LogInformation($"*****DISCONNECT*****: {clientId} had disconnected");
                 tcs.SetResult(true);
             });
             await Task.Run(()=> tcs.Task);
             CleanUp();
-            return Ok();
-        }
-
-        // SSE endpoint to unsubscribe from telemetry updates
-        [HttpGet("Unsubscribe")]
-        public IActionResult Unsubscribe()
-        {
-            CleanUp();
-            return Ok();
         }
 
         // Helper method to send SSE messages to clients
