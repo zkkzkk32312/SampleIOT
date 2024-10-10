@@ -33,7 +33,7 @@ namespace SampleIOT.API.Services
         private Dictionary<string, TelemetrySimulationFile> fileDictionary = new Dictionary<string, TelemetrySimulationFile>();
         private Dictionary<string, DeviceTelemetry> dictionary = new Dictionary<string, DeviceTelemetry>();
         private Timer _timer;
-        private const int TelemetryCountSoftLimit = 2000;
+        private const int TelemetryCountSoftLimit = 10000;
 
         public TelemetryService(IWebHostEnvironment webHostEnvironment, ILogger<TelemetryService> logger, IDeviceService service)
         {
@@ -175,7 +175,7 @@ namespace SampleIOT.API.Services
             {
                 int currentLength = deviceTelemetry.Telemetries.Length;
                 Telemetry[] trimmedArray = new Telemetry[TelemetryCountSoftLimit];
-                Array.Copy(deviceTelemetry.Telemetries, currentLength - TelemetryCountSoftLimit, trimmedArray, 0, TelemetryCountSoftLimit);
+                Array.Copy(deviceTelemetry.Telemetries, currentLength - TelemetryCountSoftLimit, trimmedArray, 0, TelemetryCountSoftLimit/2);
                 deviceTelemetry.Telemetries = trimmedArray;
                 _logger.LogInformation($"Telemetry array trimmed for {deviceTelemetry.Device.Id.ToString()}");
             }
