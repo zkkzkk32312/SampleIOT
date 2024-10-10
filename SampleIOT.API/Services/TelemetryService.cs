@@ -138,30 +138,27 @@ namespace SampleIOT.API.Services
             {
                 var deviceId = kvp.Key;
                 var fileDeviceTelemetry = fileDictionary[deviceId];
-                //var fileTelemetryArray = fileDeviceTelemetry.Telemetries;
                 var simulationRow = fileDeviceTelemetry.Rows.FirstOrDefault(x => x.TimeStamp.TimeOfDay > now.TimeOfDay);
 
                 if (simulationRow == null)
                 {
                     _logger.LogInformation("Simulation reached the end of daily cycle, current time :" + now.ToString("HH:mm:ss"));
-                    TrimDeviceTelemetry(kvp.Value);
-                    break;
+                    continue;
                 }
 
-                var updatedTelemetryList = kvp.Value.Telemetries.ToList();
+                var updatedTelemetryList = new List<Telemetry>(kvp.Value.Telemetries);
 
-                var lastTelemetry = updatedTelemetryList[updatedTelemetryList.Count - 1];
-                if (simulationRow.TimeStamp.Hour > lastTelemetry.TimeStamp.Hour ||
-                    (simulationRow.TimeStamp.Hour == lastTelemetry.TimeStamp.Hour &&
-                    simulationRow.TimeStamp.Minute > lastTelemetry.TimeStamp.Minute))
+                if (updatedTelemetryList.Count == 0)
+                    continue;
+
+                foreach(var telemetry in simulationRow.Telemetries)
                 {
-                    foreach(var telemetry in simulationRow.Telemetries)
-                    {
-                        updatedTelemetryList.Add(telemetry);
-                        kvp.Value.Telemetries = updatedTelemetryList.ToArray();
-                        NewTelemetryReceived?.Invoke(deviceId, telemetry);
-                    }
+                    updatedTelemetryList.Add(telemetry);
+                    NewTelemetryReceived?.Invoke(deviceId, telemetry);
                 }
+                kvp.Value.Telemetries = updatedTelemetryList.ToArray();
+
+                TryTrimDeviceTelemetry(kvp.Value);
             }
         }
 
@@ -170,12 +167,13 @@ namespace SampleIOT.API.Services
             _timer?.Change(Timeout.Infinite, 0);
         }
 
-        void TrimDeviceTelemetry (DeviceTelemetry deviceTelemetry)
+        void TryTrimDeviceTelemetry (DeviceTelemetry deviceTelemetry)
         {
             if (deviceTelemetry != null &&
-                deviceTelemetry.Telemetries.Count() > TelemetryCountSoftLimit)
+                deviceTelemetry.Telemetries != null &&
+                deviceTelemetry.Telemetries.Length > TelemetryCountSoftLimit)
             {
-                int currentLength = deviceTelemetry.Telemetries.Count();
+                int currentLength = deviceTelemetry.Telemetries.Length;
                 Telemetry[] trimmedArray = new Telemetry[TelemetryCountSoftLimit];
                 Array.Copy(deviceTelemetry.Telemetries, currentLength - TelemetryCountSoftLimit, trimmedArray, 0, TelemetryCountSoftLimit);
                 deviceTelemetry.Telemetries = trimmedArray;
