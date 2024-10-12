@@ -174,8 +174,8 @@ namespace SampleIOT.API.Services
                 deviceTelemetry.Telemetries.Length > TelemetryCountSoftLimit)
             {
                 int currentLength = deviceTelemetry.Telemetries.Length;
-                Telemetry[] trimmedArray = new Telemetry[TelemetryCountSoftLimit];
-                Array.Copy(deviceTelemetry.Telemetries, currentLength - TelemetryCountSoftLimit, trimmedArray, 0, TelemetryCountSoftLimit/2);
+                Telemetry[] trimmedArray = new Telemetry[TelemetryCountSoftLimit/2];
+                Array.Copy(deviceTelemetry.Telemetries, currentLength - TelemetryCountSoftLimit/2, trimmedArray, 0, TelemetryCountSoftLimit/2);
                 deviceTelemetry.Telemetries = trimmedArray;
                 _logger.LogInformation($"Telemetry array trimmed for {deviceTelemetry.Device.Id.ToString()}");
             }
