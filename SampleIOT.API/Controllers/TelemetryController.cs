@@ -9,6 +9,7 @@ using System.Linq;
 namespace SampleIOT.API.Controllers
 {
     [Route("api/[controller]")]
+    [Route("Telemetry")]
     [ApiController]
     public class TelemetryController : ControllerBase
     {
