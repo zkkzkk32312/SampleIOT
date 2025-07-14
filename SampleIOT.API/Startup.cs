@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Swashbuckle.AspNetCore.Swagger;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Swashbuckle.AspNetCore.SwaggerUI;
 using SampleIOT.API.Services;
 using SampleIOT.API.Services.Interface;
 using System;
@@ -52,9 +55,15 @@ namespace SampleIOT.API
                         builder =>
                         {
                             builder
-                                .SetIsOriginAllowedToAllowWildcardSubdomains()
-                                .WithOrigins("https://zkkzkk32312.github.io", "https://*.zackcheng.com")
+                                //.SetIsOriginAllowedToAllowWildcardSubdomains()
+                                //.WithOrigins("https://zkkzkk32312.github.io", "https://*.zackcheng.com")
                                 //.AllowAnyOrigin()
+                                .SetIsOriginAllowed(origin =>
+                                {
+                                    if (origin == "https://zkkzkk32312.github.io") return true;
+                                    if (origin?.StartsWith("https://") == true && origin.EndsWith(".zackcheng.com")) return true;
+                                    return false;
+                                })
                                 .AllowAnyHeader()
                                 .AllowAnyMethod()
                                 .AllowCredentials();
@@ -63,6 +72,7 @@ namespace SampleIOT.API
             });
 
             services.AddControllers();
+            services.AddSwaggerGen();
             services.AddSingleton<IDeviceService, DeviceService>();
             services.AddSingleton<ITelemetryService, TelemetryService>();
         }
@@ -80,6 +90,10 @@ namespace SampleIOT.API
             {
                 app.UseCors("AllowMyDomain");
             }
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
 
