@@ -9,8 +9,7 @@ using System.Linq;
 
 namespace SampleIOT.API.Controllers
 {
-    [Route("[controller]")]
-    [Route("Devices")]
+    [Route("api/[controller]")]
     [ApiController]
     public class DeviceController : ControllerBase
     {

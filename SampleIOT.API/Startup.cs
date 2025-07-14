@@ -81,6 +81,18 @@ namespace SampleIOT.API
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, 
             IDeviceService deviceService, ITelemetryService telemetryService)
         {
+            // Redirect root "/" to "/swagger"
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/")
+                {
+                    context.Response.Redirect("/swagger");
+                    return;
+                }
+
+                await next();
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseCors("AllowLocalhost");
@@ -91,9 +103,15 @@ namespace SampleIOT.API
                 app.UseCors("AllowMyDomain");
             }
 
+            app.UseStaticFiles();
+
             app.UseSwagger();
 
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "SampleIOT.API v1");
+                c.RoutePrefix = "swagger";
+            });
 
             app.UseHttpsRedirection();
 

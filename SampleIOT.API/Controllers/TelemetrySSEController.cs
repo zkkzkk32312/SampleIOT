@@ -14,7 +14,6 @@ using SampleIOT.API.Services.Interface;
 namespace SampleIOT.API.Controllers
 {
     [Route("api/[controller]")]
-    [Route("Telemetry")]
     [ApiController]
     public class TelemetrySSEController : ControllerBase
     {
