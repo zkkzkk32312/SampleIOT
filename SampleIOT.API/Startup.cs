@@ -46,7 +46,8 @@ namespace SampleIOT.API
                             })
                             .AllowAnyHeader()
                             .AllowAnyMethod()
-                            .AllowCredentials();
+                            .AllowCredentials()
+                            .SetPreflightMaxAge(TimeSpan.FromMinutes(30));
                         });
                 }
                 else
@@ -66,7 +67,8 @@ namespace SampleIOT.API
                                 })
                                 .AllowAnyHeader()
                                 .AllowAnyMethod()
-                                .AllowCredentials();
+                                .AllowCredentials()
+                                .SetPreflightMaxAge(TimeSpan.FromMinutes(30));
                         });
                 }
             });
