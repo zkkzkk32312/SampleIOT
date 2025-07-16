@@ -58,12 +58,9 @@ namespace SampleIOT.API
                         builder =>
                         {
                             builder
-                                //.SetIsOriginAllowedToAllowWildcardSubdomains()
-                                //.WithOrigins("https://zkkzkk32312.github.io", "https://*.zackcheng.com")
-                                //.AllowAnyOrigin()
                                 .SetIsOriginAllowed(origin =>
                                 {
-                                    if (origin == "https://zkkzkk32312.github.io") return true;
+                                    if (origin.StartsWith("https://zkkzkk32312.github.io")) return true;
                                     if (origin?.StartsWith("https://") == true && origin.EndsWith(".zackcheng.com")) return true;
                                     return false;
                                 })
@@ -119,8 +116,6 @@ namespace SampleIOT.API
 
             app.UseRouting();
 
-            // Add UseAuthentication() before UseAuthorization() if you need auth
-            // app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
