@@ -29,7 +29,8 @@ namespace SampleIOT.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddCors();
+            services.AddLogging();
+
             services.AddCors(options =>
             {
                 if (_env.IsDevelopment())
@@ -39,12 +40,22 @@ namespace SampleIOT.API
                         {
                             builder.SetIsOriginAllowed(origin =>
                             {
+                                using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+                                var logger = loggerFactory.CreateLogger<Startup>();
+
+                                logger.LogInformation($"Dev CORS check - Origin: '{origin}'");
+
                                 // If origin is null or empty, treat it as a local request
                                 if (string.IsNullOrEmpty(origin) || origin.ToLower() == "null")
+                                {
+                                    logger.LogInformation("Allowing null/empty origin");
                                     return true;
+                                }
 
                                 var uri = new Uri(origin);
-                                return uri.Host == "localhost" || uri.Host == "127.0.0.1";
+                                var allowed = uri.Host == "localhost" || uri.Host == "127.0.0.1";
+                                logger.LogInformation($"Origin {origin} - Allowed: {allowed}");
+                                return allowed;
                             })
                             .AllowAnyHeader()
                             .AllowAnyMethod()
@@ -60,8 +71,23 @@ namespace SampleIOT.API
                             builder
                                 .SetIsOriginAllowed(origin =>
                                 {
-                                    if (origin.StartsWith("https://zkkzkk32312.github.io")) return true;
-                                    if (origin?.StartsWith("https://") == true && origin.EndsWith(".zackcheng.com")) return true;
+                                    using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+                                    var logger = loggerFactory.CreateLogger<Startup>();
+
+                                    logger.LogInformation($"Prod CORS check - Origin: '{origin}', Environment: {_env.EnvironmentName}");
+
+                                    if (origin?.StartsWith("https://zkkzkk32312.github.io") == true)
+                                    {
+                                        logger.LogInformation("GitHub Pages origin allowed");
+                                        return true;
+                                    }
+                                    if (origin?.StartsWith("https://") == true && origin.EndsWith(".zackcheng.com"))
+                                    {
+                                        logger.LogInformation("Zackcheng.com origin allowed");
+                                        return true;
+                                    }
+
+                                    logger.LogWarning($"Origin rejected: {origin}");
                                     return false;
                                 })
                                 .AllowAnyHeader()
@@ -82,17 +108,21 @@ namespace SampleIOT.API
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
             IDeviceService deviceService, ITelemetryService telemetryService)
         {
+            app.UseStaticFiles();
+
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
                 app.UseCors("AllowLocalhost");
+                app.UseDeveloperExceptionPage();
             }
             else
             {
                 app.UseCors("AllowMyDomain");
             }
-
-            app.UseHttpsRedirection();
 
             // Redirect root "/" to "/swagger"
             app.Use(async (context, next) =>
@@ -105,16 +135,12 @@ namespace SampleIOT.API
                 await next();
             });
 
-            app.UseStaticFiles();
-
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "SampleIOT.API v1");
                 c.RoutePrefix = "swagger";
             });
-
-            app.UseRouting();
 
             app.UseAuthorization();
 
