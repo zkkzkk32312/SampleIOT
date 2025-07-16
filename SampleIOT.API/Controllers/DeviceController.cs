@@ -95,7 +95,7 @@ namespace SampleIOT.API.Controllers
             string html = string.Empty;
             foreach (var device in list)
             {
-                html += "<tr class=\"hover:bg-accent-2 w-full flex flex-row\" hx-trigger=\"click\" hx-include=\"find td\">";
+                html += "<tr class=\"hover:bg-accent-2 w-full py-2 flex flex-row\" hx-trigger=\"click\" hx-include=\"find td\">";
                 html += $"<td class=\"whitespace-nowrap px-4 py-2 flex-1\">{device.Id}</td>";
                 html += $"<td class=\"whitespace-nowrap px-4 py-2 flex-1\">{device.Type}</td>";
                 html += "</tr>";
