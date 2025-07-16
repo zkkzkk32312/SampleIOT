@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SampleIOT.API.Services
 {
@@ -34,6 +35,7 @@ namespace SampleIOT.API.Services
         private Dictionary<string, DeviceTelemetry> dictionary = new Dictionary<string, DeviceTelemetry>();
         private Timer _timer;
         private const int TelemetryCountSoftLimit = 10000;
+        private bool _isInitialized = false;
 
         public TelemetryService(IWebHostEnvironment webHostEnvironment, ILogger<TelemetryService> logger, IDeviceService service)
         {
@@ -41,7 +43,7 @@ namespace SampleIOT.API.Services
             _logger = logger;
             _telemetryDataFolderPath = Path.Combine(_webHostEnvironment.ContentRootPath, "Data", "Telemetry");
             deviceService = service;
-            Initialize();
+            //Initialize();
         }
 
         void Initialize ()
@@ -107,6 +109,12 @@ namespace SampleIOT.API.Services
 
         public DeviceTelemetry GetTelemetry(string deviceId)
         {
+            if (!_isInitialized)
+            {
+                _logger.LogWarning("TelemetryService not initialized yet, returning null for device: " + deviceId);
+                return null;
+            }
+
             if (dictionary.ContainsKey(deviceId))
             {
                 return dictionary[deviceId];
@@ -120,8 +128,14 @@ namespace SampleIOT.API.Services
             return fileName.Substring(indexOfSeparator + 1);
         }
 
-        public void Start()
+        public async Task Start()
         {
+            if (_isInitialized) return;
+
+            _logger.LogInformation("Starting telemetry service initialization...");
+            await Task.Run(() => Initialize());
+            _isInitialized = true;
+            _logger.LogInformation("Telemetry service initialization completed.");
         }
 
         void StartSimulation ()

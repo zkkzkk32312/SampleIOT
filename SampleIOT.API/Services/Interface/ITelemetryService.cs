@@ -1,6 +1,7 @@
 ﻿using SampleIOT.API.Models;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SampleIOT.API.Services.Interface
 {
@@ -8,6 +9,6 @@ namespace SampleIOT.API.Services.Interface
     {
         DeviceTelemetry GetTelemetry(string DeviceId);
         Action<string, Telemetry> NewTelemetryReceived { get; set; }
-        void Start();
+        Task Start();
     }
 }

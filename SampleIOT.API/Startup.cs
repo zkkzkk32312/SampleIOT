@@ -9,6 +9,8 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using SampleIOT.API.Services;
 using SampleIOT.API.Services.Interface;
 using System;
+using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace SampleIOT.API
 {
@@ -126,8 +128,20 @@ namespace SampleIOT.API
                 endpoints.MapControllers();
             });
 
-            deviceService.Start();
-            telemetryService.Start();
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await deviceService.Start();
+                    await telemetryService.Start();
+                }
+                catch (Exception ex)
+                {
+                    // Log the error but don't crash the application
+                    var logger = app.ApplicationServices.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "Failed to start background services");
+                }
+            });
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace SampleIOT.API.Services
 {
@@ -38,8 +39,9 @@ namespace SampleIOT.API.Services
             return _devices.FirstOrDefault(x => x.Id == id);
         }
 
-        public void Start ()
+        public Task Start ()
         {
+            return Task.CompletedTask;
         }
     }
 }

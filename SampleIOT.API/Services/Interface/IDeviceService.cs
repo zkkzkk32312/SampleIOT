@@ -1,6 +1,7 @@
 ﻿using SampleIOT.API.Models;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SampleIOT.API.Services.Interface
 {
@@ -9,6 +10,6 @@ namespace SampleIOT.API.Services.Interface
         IEnumerable<Device> GetDevices();
         Device GetDevice(string id);
 
-        void Start();
+        Task Start();
     }
 }
