@@ -9,8 +9,8 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using SampleIOT.API.Services;
 using SampleIOT.API.Services.Interface;
 using System;
-using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace SampleIOT.API
 {
@@ -40,21 +40,14 @@ namespace SampleIOT.API
                         {
                             builder.SetIsOriginAllowed(origin =>
                             {
-                                using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-                                var logger = loggerFactory.CreateLogger<Startup>();
-
-                                logger.LogInformation($"Dev CORS check - Origin: '{origin}'");
-
                                 // If origin is null or empty, treat it as a local request
                                 if (string.IsNullOrEmpty(origin) || origin.ToLower() == "null")
                                 {
-                                    logger.LogInformation("Allowing null/empty origin");
                                     return true;
                                 }
 
                                 var uri = new Uri(origin);
                                 var allowed = uri.Host == "localhost" || uri.Host == "127.0.0.1";
-                                logger.LogInformation($"Origin {origin} - Allowed: {allowed}");
                                 return allowed;
                             })
                             .AllowAnyHeader()
@@ -71,23 +64,15 @@ namespace SampleIOT.API
                             builder
                                 .SetIsOriginAllowed(origin =>
                                 {
-                                    using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-                                    var logger = loggerFactory.CreateLogger<Startup>();
-
-                                    logger.LogInformation($"Prod CORS check - Origin: '{origin}', Environment: {_env.EnvironmentName}");
-
                                     if (origin?.StartsWith("https://zkkzkk32312.github.io") == true)
                                     {
-                                        logger.LogInformation("GitHub Pages origin allowed");
                                         return true;
                                     }
                                     if (origin?.StartsWith("https://") == true && origin.EndsWith(".zackcheng.com"))
                                     {
-                                        logger.LogInformation("Zackcheng.com origin allowed");
                                         return true;
                                     }
 
-                                    logger.LogWarning($"Origin rejected: {origin}");
                                     return false;
                                 })
                                 .AllowAnyHeader()
@@ -110,7 +95,10 @@ namespace SampleIOT.API
         {
             app.UseStaticFiles();
 
-            app.UseHttpsRedirection();
+            // IMPORTANT: Comment out or remove UseHttpsRedirection when behind a reverse proxy
+            // like Nginx Proxy Manager that handles SSL termination and forwards HTTP to the app.
+            // If you need to keep it for other scenarios, ensure UseForwardedHeaders is correctly configured.
+            // app.UseHttpsRedirection(); 
 
             app.UseRouting();
 
