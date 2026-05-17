@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SampleIOT.API.Services;
-using static SampleIOT.API.Controllers.TelemetryController;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
-using SampleIOT.API.Models;
-using System.Collections.Generic;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using SampleIOT.API.Models;
 using SampleIOT.API.Services.Interface;
+using System;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SampleIOT.API.Controllers
 {
@@ -20,31 +17,31 @@ namespace SampleIOT.API.Controllers
     {
         private ITelemetryService telemetryService;
         private readonly ILogger<TelemetrySSEController> _logger;
-        private Guid clientId;
-        private string targetDevice;
+        private readonly Guid _clientId;
+        private string _targetDevice;
+        private Action<string, Telemetry> _handler;
 
         public TelemetrySSEController(ITelemetryService service, ILogger<TelemetrySSEController> logger)
         {
             this.telemetryService = service;
             this._logger = logger;
-            clientId = Guid.NewGuid();
-            targetDevice = string.Empty;
+            _clientId = Guid.NewGuid();
+            _targetDevice = string.Empty;
         }
 
-        private async void OnNewTelemetryReceived(string deviceId, Telemetry telemetry)
+        private async Task OnNewTelemetryReceived(string deviceId, Telemetry telemetry)
         {
             try
             {
-                var clients = new List<Guid>();
                 var json = JsonSerializer.Serialize(telemetry);
 
-                if (targetDevice != null && targetDevice.CompareTo(deviceId) == 0)
+                if (_targetDevice != null && _targetDevice.CompareTo(deviceId) == 0)
                 {
                     if (Response.Body != null && Response.Body.CanWrite)
                     {
                         var currentTime = DateTimeOffset.Now.ToString("HH:mm:ss");
-                        var message = $"event: Telemetry\ndata: <div>Content to swap into your HTML page. Client ID: {clientId}. Current Time: {currentTime}. Telemetry: {json}</div>\n\n";
-                        _logger.LogInformation($"*****OnNewTelemetryReceived***** : Client: {clientId}, Device ID : {deviceId}, Telemetry : {json}");
+                        var message = $"event: Telemetry\ndata: <div>Content to swap into your HTML page. Client ID: {_clientId}. Current Time: {currentTime}. Telemetry: {json}</div>\n\n";
+                        _logger.LogInformation($"*****OnNewTelemetryReceived***** : Client: {_clientId}, Device ID : {deviceId}, Telemetry : {json}");
                         await SendMessage(message);
                     }
                 }
@@ -53,7 +50,7 @@ namespace SampleIOT.API.Controllers
             {
                 _logger.LogError("**********ObjectDisposedException********");
                 _logger.LogError(ex, "Response has been disposed before the message could be sent.");
-                telemetryService.NewTelemetryReceived -= OnNewTelemetryReceived;
+                telemetryService.NewTelemetryReceived -= _handler;
             }
             catch (Exception ex)
             {
@@ -67,24 +64,24 @@ namespace SampleIOT.API.Controllers
         public async Task Subscribe(string deviceId, CancellationToken cancellationToken)
         {
             Response.ContentType = "text/event-stream";
-            Response.Headers.Add("Cache-Control", "no-cache");
+            Response.Headers.Append("Cache-Control", "no-cache");
 
-            targetDevice = deviceId;
+            _targetDevice = deviceId;
+            _handler = async (d, t) => await OnNewTelemetryReceived(d, t);
 
-            _logger.LogInformation($"*****SUSCRIBE*****: {clientId} subscribed for device {deviceId}");
-            telemetryService.NewTelemetryReceived += OnNewTelemetryReceived;
+            _logger.LogInformation($"*****SUSCRIBE*****: {_clientId} subscribed for device {deviceId}");
+            telemetryService.NewTelemetryReceived += _handler;
 
             var currentTime = DateTimeOffset.Now.ToString("HH:mm:ss");
-            await SendMessage($"event: Telemetry\ndata: <div>Content to swap into your HTML page. Client ID: {clientId}. Current Time: {currentTime}.</div>\n\n");
+            await SendMessage($"event: Telemetry\ndata: <div>Content to swap into your HTML page. Client ID: {_clientId}. Current Time: {currentTime}.</div>\n\n");
 
-            // Use TaskCompletionSource to create a Task that completes when the cancellation token is triggered
             var tcs = new TaskCompletionSource<bool>();
             cancellationToken.Register(() =>
             {
-                _logger.LogInformation($"*****DISCONNECT*****: {clientId} had disconnected");
+                _logger.LogInformation($"*****DISCONNECT*****: {_clientId} had disconnected");
                 tcs.SetResult(true);
             });
-            await Task.Run(()=> tcs.Task);
+            await tcs.Task;
             CleanUp();
         }
 
@@ -97,7 +94,7 @@ namespace SampleIOT.API.Controllers
 
         private void CleanUp()
         {
-            telemetryService.NewTelemetryReceived -= OnNewTelemetryReceived;
+            telemetryService.NewTelemetryReceived -= _handler;
             Response.Body.Close();
         }
     }
