@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using SampleIOT.API.Models;
 using SampleIOT.API.Services;
-using SampleIOT.API.Services.Interface;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -16,6 +15,9 @@ public class TelemetryServiceTestHelper : TelemetryService
 
     public TelemetryServiceTestHelper(IWebHostEnvironment env, ILogger<TelemetryService> logger, IDeviceService ds)
         : base(env, logger, ds) { }
+
+    public Task Start() => StartAsync(CancellationToken.None);
+    public void Dispose() => StopAsync(CancellationToken.None).GetAwaiter().GetResult();
 
     public bool IsInitialized => (bool)GetType().BaseType!
         .GetField("_isInitialized", BindingFlags.NonPublic | BindingFlags.Instance)!

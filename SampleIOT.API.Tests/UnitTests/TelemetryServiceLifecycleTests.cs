@@ -3,11 +3,10 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SampleIOT.API.Models;
 using SampleIOT.API.Services;
-using SampleIOT.API.Services.Interface;
 
 namespace SampleIOT.API.Tests.UnitTests;
 
-public class TelemetryServiceIntegrationTests
+public class TelemetryServiceLifecycleTests
 {
     [Fact]
     public async Task NewTelemetryReceived_EventFiresDuringSimulation()

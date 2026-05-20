@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SampleIOT.API.Models;
-using SampleIOT.API.Services.Interface;
+using SampleIOT.API.Services;
 using System.Collections.Generic;
 using System.Linq;
 

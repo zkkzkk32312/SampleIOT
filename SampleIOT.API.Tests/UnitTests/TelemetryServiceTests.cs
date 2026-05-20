@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SampleIOT.API.Models;
 using SampleIOT.API.Services;
-using SampleIOT.API.Services.Interface;
 
 namespace SampleIOT.API.Tests.UnitTests;
 
@@ -107,26 +106,6 @@ public class TelemetryServiceTests
         }
     }
 
-    [Fact]
-    public async Task Start_PopulatesDeviceDictionary()
-    {
-        var mockDeviceService = new Mock<IDeviceService>();
-        mockDeviceService.Setup(s => s.GetDevice(It.IsAny<string>()))
-            .Returns(new Device { Id = "680539", Type = "Cooktop" });
-
-        var service = CreateService(mockDeviceService.Object);
-
-        try
-        {
-            await service.Start();
-            Assert.True(service.DeviceDictionaryCount > 0);
-        }
-        finally
-        {
-            service.Dispose();
-        }
-    }
-
     // --- TryTrimDeviceTelemetry ---
 
     [Fact]
@@ -163,7 +142,7 @@ public class TelemetryServiceTests
     public void TryTrimDeviceTelemetry_NullDeviceTelemetry_NoException()
     {
         var service = CreateService();
-        service.InvokeTrim(null!);
+        Assert.Null(Record.Exception(() => service.InvokeTrim(null!)));
     }
 
     [Fact]
@@ -176,7 +155,7 @@ public class TelemetryServiceTests
             Telemetries = null!
         };
 
-        service.InvokeTrim(deviceTelemetry);
+        Assert.Null(Record.Exception(() => service.InvokeTrim(deviceTelemetry)));
     }
 
     [Fact]

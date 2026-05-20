@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SampleIOT.API.Models;
-using SampleIOT.API.Services.Interface;
+using SampleIOT.API.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SampleIOT.API.Services
 {
-    public class TelemetryService : ITelemetryService, IDisposable
+    public class TelemetryService : ITelemetryService, IHostedService
     {
         private class TelemetrySimulationFile
         {
@@ -54,8 +55,9 @@ namespace SampleIOT.API.Services
                 string deviceId = GetDeviceIdFromFileName(fileName);
                 TelemetrySimulationFile simulationFile = new TelemetrySimulationFile();
                 DeviceTelemetry deviceTelemetry2 = new DeviceTelemetry();
-                simulationFile.Device = deviceService.GetDevice(deviceId);
-                deviceTelemetry2.Device = deviceService.GetDevice(deviceId);
+                Device device = deviceService.GetDevice(deviceId);
+                simulationFile.Device = device;
+                deviceTelemetry2.Device = device;
 
                 simulationFile.Rows = new List<TelemetrySimulationFileRow>();
                 List<Telemetry> telemetries2 = new List<Telemetry>();
@@ -69,12 +71,12 @@ namespace SampleIOT.API.Services
                         telemetryNames = headerLine.Split(',');
                     }
 
+                    DateTimeOffset now = DateTimeOffset.Now;
                     string line;
                     while ((line = reader.ReadLine()) != null)
                     {
                         string[] fields = line.Split(',');
                         DateTimeOffset timeOfDay = DateTimeOffset.Parse(fields[0]);
-                        DateTimeOffset now = DateTimeOffset.Now;
 
                         var row = new TelemetrySimulationFileRow();
                         row.TimeStamp = timeOfDay;
@@ -82,11 +84,12 @@ namespace SampleIOT.API.Services
 
                         for (int i = 1; i < fields.Length; i++)
                         {
-                            row.Telemetries.Add(new Telemetry { Key = telemetryNames[i], Value = fields[i], TimeStamp = timeOfDay });
+                            var telemetry = new Telemetry { Key = telemetryNames[i], Value = fields[i], TimeStamp = timeOfDay };
+                            row.Telemetries.Add(telemetry);
 
                             if (timeOfDay <= now)
                             {
-                                telemetries2.Add(new Telemetry { Key = telemetryNames[i], Value = fields[i], TimeStamp = timeOfDay });
+                                telemetries2.Add(telemetry);
                             }
                         }
                         simulationFile.Rows.Add(row);
@@ -97,7 +100,6 @@ namespace SampleIOT.API.Services
                 fileDictionary.TryAdd(deviceId, simulationFile);
                 dictionary.TryAdd(deviceId, deviceTelemetry2);
             }
-            StartSimulation();
         }
 
         public DeviceTelemetry GetTelemetry(string deviceId)
@@ -120,14 +122,22 @@ namespace SampleIOT.API.Services
             return fileName.Substring(indexOfSeparator + 1);
         }
 
-        public async Task Start()
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             if (_isInitialized) return;
 
             _logger.LogInformation("Starting telemetry service initialization...");
-            await Task.Run(() => Initialize());
+            await Task.Run(() => Initialize(), cancellationToken);
             _isInitialized = true;
+            StartSimulation();
             _logger.LogInformation("Telemetry service initialization completed.");
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            StopSimulation();
+            _timer?.Dispose();
+            return Task.CompletedTask;
         }
 
         void StartSimulation ()
@@ -137,6 +147,8 @@ namespace SampleIOT.API.Services
 
         void Simulate (object state)
         {
+            List<(string deviceId, Telemetry telemetry)> notifications = new List<(string, Telemetry)>();
+
             lock (_simulationLock)
             {
                 DateTimeOffset now = DateTimeOffset.Now;
@@ -156,8 +168,7 @@ namespace SampleIOT.API.Services
                         continue;
                     }
 
-                    if (!dictionary.TryGetValue(deviceId, out var deviceTelemetry))
-                        continue;
+                    var deviceTelemetry = kvp.Value;
 
                     var updatedTelemetryList = new List<Telemetry>(deviceTelemetry.Telemetries);
 
@@ -167,11 +178,19 @@ namespace SampleIOT.API.Services
                     foreach (var telemetry in simulationRow.Telemetries)
                     {
                         updatedTelemetryList.Add(telemetry);
-                        NewTelemetryReceived?.Invoke(deviceId, telemetry);
+                        notifications.Add((deviceId, telemetry));
                     }
                     deviceTelemetry.Telemetries = updatedTelemetryList.ToArray();
 
                     TryTrimDeviceTelemetry(deviceTelemetry);
+                }
+            }
+
+            if (NewTelemetryReceived != null)
+            {
+                foreach (var (deviceId, telemetry) in notifications)
+                {
+                    NewTelemetryReceived(deviceId, telemetry);
                 }
             }
         }
@@ -195,9 +214,5 @@ namespace SampleIOT.API.Services
             }
         }
 
-        public void Dispose()
-        {
-            _timer?.Dispose();
-        }
     }
 }
