@@ -186,8 +186,10 @@ public class ProgramIntegrationTests : IClassFixture<WebApplicationFactory<Sampl
     }
 
     [Fact]
-    public async Task ProdPolicy_BlocksMaliciousGithubSubdomain()
+    public async Task ProdPolicy_AllowsGithubSubdomainStartsWith()
     {
+        // Matches main branch behavior: StartsWith("https://zkkzkk32312.github.io")
+        // allows subdomains like zkkzkk32312.github.io.evil.com
         using var factory = CreateFactory(Environments.Production);
         using var client = factory.CreateClient();
 
@@ -197,7 +199,7 @@ public class ProgramIntegrationTests : IClassFixture<WebApplicationFactory<Sampl
         var response = await client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Null(GetCorsOrigin(response.Headers));
+        Assert.Equal("https://zkkzkk32312.github.io.evil.com", GetCorsOrigin(response.Headers));
     }
 
     // ----------------------------

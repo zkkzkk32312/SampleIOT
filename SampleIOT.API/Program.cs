@@ -39,11 +39,15 @@ namespace SampleIOT.API
                 options.AddPolicy("ProdPolicy", policy =>
                     policy.SetIsOriginAllowed(origin =>
                     {
-                        if (origin == "https://zkkzkk32312.github.io")
+                        if (origin?.StartsWith("https://zkkzkk32312.github.io") == true)
+                        {
                             return true;
-                        var uri = new Uri(origin);
-                        if (uri.Scheme == "https" && (uri.Host == "zackcheng.com" || uri.Host.EndsWith(".zackcheng.com")))
+                        }
+                        if (origin?.StartsWith("https://") == true && origin.EndsWith(".zackcheng.com"))
+                        {
                             return true;
+                        }
+
                         return false;
                     })
                     .AllowAnyHeader()
