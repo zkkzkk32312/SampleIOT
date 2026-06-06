@@ -20,6 +20,6 @@ RUN dotnet publish "./SampleIOT.API.csproj" -c $BUILD_CONFIGURATION -o /app/publ
 
 FROM base AS final
 WORKDIR /app
-ENV ASPNETCORE_URLS=http://+:80
+ENV ASPNETCORE_URLS=http://+:80;https://+:443
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "SampleIOT.API.dll"]
