@@ -35,4 +35,4 @@ jobs:
           context: .
           file: SampleIOT.API/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sampleiotapi:${{ github.ref == 'refs/heads/main' && 'latest' || 'dev' }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sampleiot:${{ github.ref == 'refs/heads/main' && 'latest' || 'dev' }}
