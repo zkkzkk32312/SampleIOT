@@ -62,18 +62,14 @@ namespace SampleIOT.API
             if (app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-            }
-
-            app.UseRouting();
-
-            if (app.Environment.IsDevelopment())
-            {
                 app.UseCors("DevPolicy");
             }
             else
             {
                 app.UseCors("ProdPolicy");
             }
+
+            app.UseRouting();
 
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SampleIOT API"));
