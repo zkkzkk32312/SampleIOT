@@ -56,7 +56,10 @@ namespace SampleIOT.API
 
             var app = builder.Build();
 
-            app.UseHttpsRedirection();
+            // UseHttpsRedirection is disabled because the app runs behind a reverse proxy
+            // (Nginx Proxy Manager) that handles SSL termination and forwards HTTP to the app.
+            // Enabling it would cause 301 redirects on preflight OPTIONS requests,
+            // breaking CORS because the redirect response lacks CORS headers.
             app.UseStaticFiles();
 
             if (app.Environment.IsDevelopment())
