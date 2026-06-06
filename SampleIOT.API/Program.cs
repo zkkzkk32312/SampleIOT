@@ -62,6 +62,8 @@ namespace SampleIOT.API
             // breaking CORS because the redirect response lacks CORS headers.
             app.UseStaticFiles();
 
+            app.UseRouting();
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -72,14 +74,23 @@ namespace SampleIOT.API
                 app.UseCors("ProdPolicy");
             }
 
-            app.UseRouting();
+            app.UseAuthorization();
 
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SampleIOT API"));
 
-            app.MapControllers();
+            // Redirect root "/" to "/swagger"
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/")
+                {
+                    context.Response.Redirect("/swagger");
+                    return;
+                }
+                await next();
+            });
 
-            app.MapGet("/", () => Results.Redirect("/swagger"));
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
 
             app.Run();
         }
