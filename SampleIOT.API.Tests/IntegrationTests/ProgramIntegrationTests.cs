@@ -201,6 +201,70 @@ public class ProgramIntegrationTests : IClassFixture<WebApplicationFactory<Sampl
     }
 
     // ----------------------------
+    // PRODUCTION PREFLIGHT — mirrors the actual browser request that was failing
+    // ----------------------------
+
+    [Fact]
+    public async Task ProductionPreflight_GithubPagesOrigin_ReturnsCorsHeaders()
+    {
+        // Run in Production (the default, matching the Docker container)
+        using var factory = CreateFactory(Environments.Production);
+        using var client = factory.CreateClient();
+
+        // Simulate the browser's OPTIONS preflight for GET /devices from the actual frontend origin
+        // Uses /devices (the route the frontend actually hits, via [Route("Devices")])
+        using var request = new HttpRequestMessage(HttpMethod.Options, "/devices");
+        request.Headers.Add("Origin", "https://zkkzkk32312.github.io");
+        request.Headers.Add("Access-Control-Request-Method", "GET");
+        request.Headers.Add("Access-Control-Request-Headers", "Content-Type");
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal("https://zkkzkk32312.github.io", GetCorsOrigin(response.Headers));
+        Assert.True(response.Headers.Contains("Access-Control-Allow-Methods"));
+        Assert.True(response.Headers.Contains("Access-Control-Allow-Headers"));
+        Assert.True(response.Headers.Contains("Access-Control-Allow-Credentials"));
+    }
+
+    [Fact]
+    public async Task ProductionPreflight_GithubPagesOrigin_HtmxHeaders_ReturnsCorsHeaders()
+    {
+        // Run in Production (the default, matching the Docker container)
+        using var factory = CreateFactory(Environments.Production);
+        using var client = factory.CreateClient();
+
+        // Simulate htmx's preflight — htmx sends HX-Request header which triggers a preflight
+        using var request = new HttpRequestMessage(HttpMethod.Options, "/devices");
+        request.Headers.Add("Origin", "https://zkkzkk32312.github.io");
+        request.Headers.Add("Access-Control-Request-Method", "GET");
+        request.Headers.Add("Access-Control-Request-Headers", "HX-Request");
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal("https://zkkzkk32312.github.io", GetCorsOrigin(response.Headers));
+    }
+
+    [Fact]
+    public async Task Production_GetDevices_FromGithubPagesOrigin_ReturnsCorsHeaders()
+    {
+        // Run in Production (the default, matching the Docker container)
+        using var factory = CreateFactory(Environments.Production);
+        using var client = factory.CreateClient();
+
+        // Simulate the actual GET request from the frontend (htmx sends Accept: text/html)
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/devices");
+        request.Headers.Add("Origin", "https://zkkzkk32312.github.io");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("https://zkkzkk32312.github.io", GetCorsOrigin(response.Headers));
+    }
+
+    // ----------------------------
     // ERROR TESTS
     // ----------------------------
 
