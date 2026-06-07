@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SampleIOT.API.Services;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-
-namespace SampleIOT.API.Tests.IntegrationTests;
 
 public class ProgramIntegrationTests : IClassFixture<WebApplicationFactory<SampleIOT.API.Program>>
 {
@@ -282,5 +282,34 @@ public class ProgramIntegrationTests : IClassFixture<WebApplicationFactory<Sampl
 
         var content = await response.Content.ReadAsStringAsync();
         Assert.Contains("traceId", content);
+    }
+
+    // ----------------------------
+    // DI REGISTRATION TESTS
+    // ----------------------------
+
+    [Fact]
+    public void Services_AreTrueSingletons()
+    {
+        var sp = _factory.Services;
+
+        Assert.Same(sp.GetRequiredService<IDeviceService>(), sp.GetRequiredService<IDeviceService>());
+        Assert.Same(sp.GetRequiredService<ITelemetryService>(), sp.GetRequiredService<ITelemetryService>());
+    }
+
+    [Fact]
+    public void HostedServiceInstance_IsSameAsInterfaceResolvedInstance()
+    {
+        var sp = _factory.Services;
+
+        var deviceViaInterface = sp.GetRequiredService<IDeviceService>();
+        var telemetryViaInterface = sp.GetRequiredService<ITelemetryService>();
+
+        var hostedServices = sp.GetRequiredService<IEnumerable<IHostedService>>();
+        var deviceHosted = hostedServices.OfType<DeviceService>().Single();
+        var telemetryHosted = hostedServices.OfType<TelemetryService>().Single();
+
+        Assert.Same(deviceViaInterface, deviceHosted);
+        Assert.Same(telemetryViaInterface, telemetryHosted);
     }
 }
