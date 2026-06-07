@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SampleIOT.API.Models;
@@ -15,7 +15,7 @@ namespace SampleIOT.API.Controllers
     [ApiController]
     public class TelemetrySSEController : ControllerBase
     {
-        private ITelemetryService telemetryService;
+        private readonly ITelemetryService telemetryService;
         private readonly ILogger<TelemetrySSEController> _logger;
         private readonly Guid _clientId;
         private string _targetDevice;
@@ -35,13 +35,13 @@ namespace SampleIOT.API.Controllers
             {
                 var json = JsonSerializer.Serialize(telemetry);
 
-                if (_targetDevice != null && _targetDevice.CompareTo(deviceId) == 0)
+                if (_targetDevice != null && _targetDevice == deviceId)
                 {
                     if (Response.Body != null && Response.Body.CanWrite)
                     {
                         var currentTime = DateTimeOffset.Now.ToString("HH:mm:ss");
                         var message = $"event: Telemetry\ndata: <div>Content to swap into your HTML page. Client ID: {_clientId}. Current Time: {currentTime}. Telemetry: {json}</div>\n\n";
-                        _logger.LogInformation($"*****OnNewTelemetryReceived***** : Client: {_clientId}, Device ID : {deviceId}, Telemetry : {json}");
+                        _logger.LogDebug($"*****OnNewTelemetryReceived***** : Client: {_clientId}, Device ID : {deviceId}, Telemetry : {json}");
                         await SendMessage(message);
                     }
                 }
@@ -72,17 +72,23 @@ namespace SampleIOT.API.Controllers
             _logger.LogInformation($"*****SUSCRIBE*****: {_clientId} subscribed for device {deviceId}");
             telemetryService.NewTelemetryReceived += _handler;
 
-            var currentTime = DateTimeOffset.Now.ToString("HH:mm:ss");
-            await SendMessage($"event: Telemetry\ndata: <div>Content to swap into your HTML page. Client ID: {_clientId}. Current Time: {currentTime}.</div>\n\n");
-
-            var tcs = new TaskCompletionSource<bool>();
-            cancellationToken.Register(() =>
+            try
             {
-                _logger.LogInformation($"*****DISCONNECT*****: {_clientId} had disconnected");
-                tcs.SetResult(true);
-            });
-            await tcs.Task;
-            CleanUp();
+                var currentTime = DateTimeOffset.Now.ToString("HH:mm:ss");
+                await SendMessage($"event: Telemetry\ndata: <div>Content to swap into your HTML page. Client ID: {_clientId}. Current Time: {currentTime}.</div>\n\n");
+
+                var tcs = new TaskCompletionSource<bool>();
+                cancellationToken.Register(() =>
+                {
+                    _logger.LogInformation($"*****DISCONNECT*****: {_clientId} had disconnected");
+                    tcs.SetResult(true);
+                });
+                await tcs.Task;
+            }
+            finally
+            {
+                CleanUp();
+            }
         }
 
         // Helper method to send SSE messages to clients
@@ -95,7 +101,9 @@ namespace SampleIOT.API.Controllers
         private void CleanUp()
         {
             telemetryService.NewTelemetryReceived -= _handler;
-            Response.Body.Close();
+            // Response.Body.Close() removed — ASP.NET Core disposes the response
+            // when the request ends. Manual close can cause ObjectDisposedException
+            // if the framework tries to write headers after we've closed the stream.
         }
     }
 }

@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SampleIOT.API.Models;
 using SampleIOT.API.Services;
+using System;
 using System.Linq;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -13,7 +14,7 @@ namespace SampleIOT.API.Controllers
     [ApiController]
     public class TelemetryController : ControllerBase
     {
-        private ITelemetryService telemetryService;
+        private readonly ITelemetryService telemetryService;
         private readonly ILogger<TelemetryController> _logger;
         public TelemetryController(ITelemetryService service, ILogger<TelemetryController> logger)
         {
@@ -23,7 +24,7 @@ namespace SampleIOT.API.Controllers
 
         // GET api/<TelemetryController>/5
         [HttpGet("{id}")]
-        public IActionResult Get(string id, int?limit, bool? disaggregated)
+        public IActionResult Get(string id, int? limit, bool? disaggregated)
         {
             var deviceTelemetry = telemetryService.GetTelemetry(id);
 
