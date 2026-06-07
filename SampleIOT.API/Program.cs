@@ -1,5 +1,10 @@
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
+using SampleIOT.API.Services;
+using Microsoft.AspNetCore.Http;
+using System;
 
 namespace SampleIOT.API
 {
@@ -7,14 +12,89 @@ namespace SampleIOT.API
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
-        }
+            var builder = WebApplication.CreateBuilder(args);
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
+            builder.Services.AddSingleton<IDeviceService, DeviceService>();
+            builder.Services.AddSingleton<ITelemetryService, TelemetryService>();
+            builder.Services.AddHostedService(sp => (DeviceService)sp.GetRequiredService<IDeviceService>());
+            builder.Services.AddHostedService(sp => (TelemetryService)sp.GetRequiredService<ITelemetryService>());
+            builder.Services.AddControllers();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("DevPolicy", policy =>
+                    policy.SetIsOriginAllowed(origin =>
+                    {
+                        if (string.IsNullOrEmpty(origin) || origin.ToLower() == "null")
+                            return true;
+                        var uri = new Uri(origin);
+                        return uri.Host == "localhost" || uri.Host == "127.0.0.1";
+                    })
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials()
+                    .SetPreflightMaxAge(TimeSpan.FromMinutes(30)));
+
+                options.AddPolicy("ProdPolicy", policy =>
+                    policy.SetIsOriginAllowed(origin =>
+                    {
+                        if (origin?.StartsWith("https://zkkzkk32312.github.io") == true)
+                        {
+                            return true;
+                        }
+                        if (origin?.StartsWith("https://") == true && origin.EndsWith(".zackcheng.com"))
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    })
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials()
+                    .SetPreflightMaxAge(TimeSpan.FromMinutes(30)));
+            });
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "SampleIOT API", Version = "v1" }));
+
+            var app = builder.Build();
+
+            // UseHttpsRedirection is disabled because the app runs behind a reverse proxy
+            // (Nginx Proxy Manager) that handles SSL termination and forwards HTTP to the app.
+            // Enabling it would cause 301 redirects on preflight OPTIONS requests,
+            // breaking CORS because the redirect response lacks CORS headers.
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseCors("DevPolicy");
+            }
+            else
+            {
+                app.UseCors("ProdPolicy");
+            }
+
+            app.UseAuthorization();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SampleIOT API"));
+
+            // Redirect root "/" to "/swagger"
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/")
                 {
-                    webBuilder.UseStartup<Startup>();
-                });
+                    context.Response.Redirect("/swagger");
+                    return;
+                }
+                await next();
+            });
+
+            app.MapControllers();
+
+            app.Run();
+        }
     }
 }

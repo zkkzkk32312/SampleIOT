@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SampleIOT.API.Models;
-using SampleIOT.API.Services.Interface;
+using SampleIOT.API.Services;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -14,7 +15,7 @@ namespace SampleIOT.API.Controllers
     [ApiController]
     public class DeviceController : ControllerBase
     {
-        private IDeviceService deviceService;
+        private readonly IDeviceService deviceService;
         private readonly ILogger<DeviceController> _logger;
 
         public DeviceController(IDeviceService service, ILogger<DeviceController> logger) 
@@ -44,9 +45,9 @@ namespace SampleIOT.API.Controllers
             }
 
             // Check the Accept header to determine the desired response format
-            var acceptHeader = Request.Headers["Accept"].ToString();
+            var acceptHeader = Request.Headers.Accept;
 
-            if (acceptHeader.Contains("application"))
+            if (acceptHeader.ToString().Contains("application"))
             {
                 // Return JSON data
                 if (devices != null)
@@ -76,8 +77,8 @@ namespace SampleIOT.API.Controllers
             }
 
             // Check the Accept header to determine the desired response format
-            var acceptHeader = Request.Headers["Accept"].ToString();
-            if (acceptHeader.Contains("text/html"))
+            var acceptHeader = Request.Headers.Accept;
+            if (acceptHeader.ToString().Contains("text/html"))
             {
                 // Generate HTML content for HTMX
                 string htmlContent = GetDevicesHtml(new List<Device> { device });
@@ -90,17 +91,17 @@ namespace SampleIOT.API.Controllers
             }
         }
 
-        private string GetDevicesHtml (IEnumerable<Device> list)
+        private string GetDevicesHtml(IEnumerable<Device> list)
         {
-            string html = string.Empty;
+            var sb = new StringBuilder();
             foreach (var device in list)
             {
-                html += "<tr class=\"hover:bg-accent-2 w-full py-2 flex flex-row\" hx-trigger=\"click\" hx-include=\"find td\">";
-                html += $"<td class=\"whitespace-nowrap px-4 py-2 flex-1\">{device.Id}</td>";
-                html += $"<td class=\"whitespace-nowrap px-4 py-2 flex-1\">{device.Type}</td>";
-                html += "</tr>";
+                sb.Append("<tr class=\"hover:bg-accent-2 w-full py-2 flex flex-row\" hx-trigger=\"click\" hx-include=\"find td\">");
+                sb.Append($"<td class=\"whitespace-nowrap px-4 py-2 flex-1\">{device.Id}</td>");
+                sb.Append($"<td class=\"whitespace-nowrap px-4 py-2 flex-1\">{device.Type}</td>");
+                sb.Append("</tr>");
             }
-            return html;
+            return sb.ToString();
         }
     }
 }
