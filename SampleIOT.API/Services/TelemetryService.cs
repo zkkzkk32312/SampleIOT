@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SampleIOT.API.Models;
@@ -55,6 +55,12 @@ namespace SampleIOT.API.Services
                 TelemetrySimulationFile simulationFile = new TelemetrySimulationFile();
                 DeviceTelemetry deviceTelemetry2 = new DeviceTelemetry();
                 Device device = deviceService.GetDevice(deviceId);
+                if (device == null)
+                {
+                    _logger.LogWarning("Device {DeviceId} from CSV file {FileName} not found in device list, skipping", deviceId, fileName);
+                    continue;
+                }
+
                 simulationFile.Device = device;
                 deviceTelemetry2.Device = device;
 
@@ -109,10 +115,7 @@ namespace SampleIOT.API.Services
                 return null;
             }
 
-            lock (_simulationLock)
-            {
-                return dictionary.TryGetValue(deviceId, out var deviceTelemetry) ? deviceTelemetry : null;
-            }
+            return dictionary.TryGetValue(deviceId, out var deviceTelemetry) ? deviceTelemetry : null;
         }
 
         string GetDeviceIdFromFileName (string fileName)
@@ -148,49 +151,52 @@ namespace SampleIOT.API.Services
         void Simulate (object state)
         {
             List<(string deviceId, Telemetry telemetry)> notifications = new List<(string, Telemetry)>();
+            DateTimeOffset now = DateTimeOffset.Now;
 
-            lock (_simulationLock)
+            // Snapshot dictionary entries — dictionary structure is not modified after initialization,
+            // and Telemetries array swaps are atomic reference assignments.
+            var entries = dictionary.ToArray();
+
+            foreach (var kvp in entries)
             {
-                DateTimeOffset now = DateTimeOffset.Now;
+                var deviceId = kvp.Key;
+                var deviceTelemetry = kvp.Value;
 
-                foreach (var kvp in dictionary)
+                if (!fileDictionary.TryGetValue(deviceId, out var fileDeviceTelemetry))
+                    continue;
+
+                var simulationRow = fileDeviceTelemetry.Rows.FirstOrDefault(x => x.TimeStamp.TimeOfDay > now.TimeOfDay);
+
+                if (simulationRow == null)
                 {
-                    var deviceId = kvp.Key;
-
-                    if (!fileDictionary.TryGetValue(deviceId, out var fileDeviceTelemetry))
-                        continue;
-
-                    var simulationRow = fileDeviceTelemetry.Rows.FirstOrDefault(x => x.TimeStamp.TimeOfDay > now.TimeOfDay);
-
-                    if (simulationRow == null)
-                    {
-                        _logger.LogInformation("Simulation reached the end of daily cycle, current time :" + now.ToString("HH:mm:ss"));
-                        continue;
-                    }
-
-                    var deviceTelemetry = kvp.Value;
-
-                    var updatedTelemetryList = new List<Telemetry>(deviceTelemetry.Telemetries);
-
-                    if (updatedTelemetryList.Count == 0)
-                        continue;
-
-                    foreach (var telemetry in simulationRow.Telemetries)
-                    {
-                        updatedTelemetryList.Add(telemetry);
-                        notifications.Add((deviceId, telemetry));
-                    }
-                    deviceTelemetry.Telemetries = updatedTelemetryList.ToArray();
-
-                    TryTrimDeviceTelemetry(deviceTelemetry);
+                    _logger.LogInformation("Simulation reached the end of daily cycle, current time :" + now.ToString("HH:mm:ss"));
+                    continue;
                 }
+
+                // Reuse existing array via Resize instead of allocating new List + ToArray each tick.
+                // Array.Resize reuses the buffer when possible, amortizing allocations.
+                Telemetry[] array = deviceTelemetry.Telemetries;
+                int newCount = array.Length + simulationRow.Telemetries.Count;
+                Array.Resize(ref array, newCount);
+                int offset = array.Length - simulationRow.Telemetries.Count;
+                for (int i = 0; i < simulationRow.Telemetries.Count; i++)
+                {
+                    array[offset + i] = simulationRow.Telemetries[i];
+                    notifications.Add((deviceId, simulationRow.Telemetries[i]));
+                }
+                deviceTelemetry.Telemetries = array;
+
+                TryTrimDeviceTelemetry(deviceTelemetry);
             }
 
-            if (NewTelemetryReceived != null)
+            // Capture delegate into a local variable to avoid a race where a subscriber
+            // unsubscribes (sets to null) between the null-check and the invocation.
+            var handler = NewTelemetryReceived;
+            if (handler != null)
             {
                 foreach (var (deviceId, telemetry) in notifications)
                 {
-                    NewTelemetryReceived(deviceId, telemetry);
+                    handler(deviceId, telemetry);
                 }
             }
         }
@@ -210,7 +216,7 @@ namespace SampleIOT.API.Services
                 Telemetry[] trimmedArray = new Telemetry[TelemetryCountSoftLimit/2];
                 Array.Copy(deviceTelemetry.Telemetries, currentLength - TelemetryCountSoftLimit/2, trimmedArray, 0, TelemetryCountSoftLimit/2);
                 deviceTelemetry.Telemetries = trimmedArray;
-                _logger.LogInformation($"Telemetry array trimmed for {deviceTelemetry.Device.Id.ToString()}");
+                _logger.LogInformation($"Telemetry array trimmed for {deviceTelemetry.Device.Id}");
             }
         }
 
