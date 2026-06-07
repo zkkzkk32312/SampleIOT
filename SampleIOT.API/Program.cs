@@ -14,12 +14,10 @@ namespace SampleIOT.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddSingleton<DeviceService>();
-            builder.Services.AddSingleton<IDeviceService>(sp => sp.GetRequiredService<DeviceService>());
-            builder.Services.AddSingleton<TelemetryService>();
-            builder.Services.AddSingleton<ITelemetryService>(sp => sp.GetRequiredService<TelemetryService>());
-            builder.Services.AddHostedService(sp => sp.GetRequiredService<DeviceService>());
-            builder.Services.AddHostedService(sp => sp.GetRequiredService<TelemetryService>());
+            builder.Services.AddSingleton<IDeviceService, DeviceService>();
+            builder.Services.AddSingleton<ITelemetryService, TelemetryService>();
+            builder.Services.AddHostedService(sp => (DeviceService)sp.GetRequiredService<IDeviceService>());
+            builder.Services.AddHostedService(sp => (TelemetryService)sp.GetRequiredService<ITelemetryService>());
             builder.Services.AddControllers();
             builder.Services.AddCors(options =>
             {

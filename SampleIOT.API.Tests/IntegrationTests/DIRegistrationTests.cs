@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using SampleIOT.API.Services;
 
 namespace SampleIOT.API.Tests.IntegrationTests;
@@ -14,25 +15,27 @@ public class DIRegistrationTests : IClassFixture<WebApplicationFactory<SampleIOT
     }
 
     [Fact]
-    public void InterfaceAndConcreteResolveToSameInstance()
-    {
-        var sp = _factory.Services;
-
-        var deviceInterface = sp.GetRequiredService<IDeviceService>();
-        var deviceConcrete = sp.GetRequiredService<DeviceService>();
-        Assert.Same(deviceInterface, deviceConcrete);
-
-        var telemetryInterface = sp.GetRequiredService<ITelemetryService>();
-        var telemetryConcrete = sp.GetRequiredService<TelemetryService>();
-        Assert.Same(telemetryInterface, telemetryConcrete);
-    }
-
-    [Fact]
-    public void RepeatedResolutionsReturnSameSingleton()
+    public void Services_AreTrueSingletons()
     {
         var sp = _factory.Services;
 
         Assert.Same(sp.GetRequiredService<IDeviceService>(), sp.GetRequiredService<IDeviceService>());
         Assert.Same(sp.GetRequiredService<ITelemetryService>(), sp.GetRequiredService<ITelemetryService>());
+    }
+
+    [Fact]
+    public void HostedServiceInstance_IsSameAsInterfaceResolvedInstance()
+    {
+        var sp = _factory.Services;
+
+        var deviceViaInterface = sp.GetRequiredService<IDeviceService>();
+        var telemetryViaInterface = sp.GetRequiredService<ITelemetryService>();
+
+        var hostedServices = sp.GetRequiredService<IEnumerable<IHostedService>>();
+        var deviceHosted = hostedServices.OfType<DeviceService>().Single();
+        var telemetryHosted = hostedServices.OfType<TelemetryService>().Single();
+
+        Assert.Same(deviceViaInterface, deviceHosted);
+        Assert.Same(telemetryViaInterface, telemetryHosted);
     }
 }
