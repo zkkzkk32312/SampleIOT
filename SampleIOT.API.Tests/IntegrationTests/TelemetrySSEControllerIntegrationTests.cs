@@ -60,6 +60,26 @@ public class TelemetrySSEControllerIntegrationTests : IClassFixture<WebApplicati
         }, TimeSpan.FromSeconds(15));
     }
 
+    [Fact]
+    public async Task AltRoute_Subscribe_ReturnsSSEHeaders()
+    {
+        await WithTimeout(async () =>
+        {
+            using var cts = new CancellationTokenSource();
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/Telemetry/Subscribe/680539");
+            request.Version = new Version(1, 1);
+
+            var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/event-stream", response.Content.Headers.ContentType?.MediaType);
+            Assert.True(response.Headers.TryGetValues("Cache-Control", out var cacheValues));
+            Assert.Contains("no-cache", cacheValues);
+
+            cts.Cancel();
+        }, TimeSpan.FromSeconds(10));
+    }
+
     static async Task WithTimeout(Func<Task> action, TimeSpan timeout)
     {
         var task = action();

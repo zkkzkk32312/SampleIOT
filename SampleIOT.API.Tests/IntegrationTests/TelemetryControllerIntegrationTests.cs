@@ -101,4 +101,29 @@ public class TelemetryControllerIntegrationTests : IClassFixture<WebApplicationF
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task AltRoute_Get_ExistingDevice_ReturnsOkWithTelemetry()
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/Telemetry/680539");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        var response = await _client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var deviceTelemetry = await response.Content.ReadFromJsonAsync<DeviceTelemetry>();
+
+        Assert.NotNull(deviceTelemetry);
+        Assert.Equal("680539", deviceTelemetry.Device.Id);
+        Assert.True(deviceTelemetry.Telemetries.Length > 0);
+    }
+
+    [Fact]
+    public async Task AltRoute_Get_NonExistentDevice_ReturnsNotFound()
+    {
+        var response = await _client.GetAsync("/Telemetry/nonexistent");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 }
