@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SampleIOT.API.Models;
-using SampleIOT.API.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -122,15 +121,16 @@ namespace SampleIOT.API.Services
             return fileName.Substring(indexOfSeparator + 1);
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
-            if (_isInitialized) return;
+            if (_isInitialized) return Task.CompletedTask;
 
             _logger.LogInformation("Starting telemetry service initialization...");
-            await Task.Run(() => Initialize(), cancellationToken);
+            Initialize();
             _isInitialized = true;
             StartSimulation();
             _logger.LogInformation("Telemetry service initialization completed.");
+            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

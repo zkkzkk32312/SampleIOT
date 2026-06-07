@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SampleIOT.API.Models;
-using SampleIOT.API.Services;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -53,17 +52,15 @@ namespace SampleIOT.API.Services
             return _devices.FirstOrDefault(x => x.Id == id);
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
-            if (_isInitialized) return;
+            if (_isInitialized) return Task.CompletedTask;
 
             _logger.LogInformation("Starting device service initialization...");
-            await Task.Run(() =>
-            {
-                _devices = LoadDevicesFromJsonFile();
-            }, cancellationToken);
+            _devices = LoadDevicesFromJsonFile();
             _isInitialized = true;
             _logger.LogInformation("Device service initialization completed. Loaded " + _devices.Count() + " devices.");
+            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
